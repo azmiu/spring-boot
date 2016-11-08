@@ -4,7 +4,6 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
-
 /**
  * <p>
  * CopyRright (c)20014-2016: Azmiu
@@ -54,8 +53,7 @@ public class DateUtil {
      * @return
      * @throws Exception
      */
-    public static String dateToyyyyMMdd(Date time)
-    {
+    public static String dateToyyyyMMdd(Date time) {
         SimpleDateFormat formatter;
         formatter = new SimpleDateFormat("yyyy-MM-dd");
         String ctime = formatter.format(time);
@@ -70,11 +68,5 @@ public class DateUtil {
      */
     public static Date getSystemDate() {
         return new Date();
-    }
-
-    public static void main(String[] args) {
-        String tmp = DateUtil.dateToyyyyMMdd(DateUtil.addDay(new Date(),
-                -7));
-        System.out.println(tmp);
     }
 }
