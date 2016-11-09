@@ -42,8 +42,15 @@ import org.springframework.stereotype.Component;
 @Component
 public class ScheduledTasks {
 
+    private final static String DB_NAME_16_195 = "192.168.16.195";
+    private final static String DB_NAME_16_196 = "192.168.16.196";
+    private final static String DB_NAME_16_197 = "192.168.16.197";
+    private final static String DB_NAME_17_205 = "192.168.17.205";
+    private final static String DB_NAME_17_206 = "192.168.17.206";
+    private final static String DB_NAME_17_207 = "192.168.17.207";
     private final static String DB_NAME_30_4 = "192.168.30.4";
     private final static String DB_NAME_30_5 = "192.168.30.5";
+    private final static String LIMIT = " LIMIT 10000";
     private final static String WK_T_EVERYDAYDATA = "WK_T_EVERYDAYDATA";
     private final static String WK_T_VALIDATION_INFO = "WK_T_VALIDATION_INFO";
     private final static String WK_T_VALIDATION_INFOCNT = "WK_T_VALIDATION_INFOCNT";
@@ -51,21 +58,46 @@ public class ScheduledTasks {
     private final static String WK_T_VALIDATION_REF = "WK_T_VALIDATION_REF";
     private final static String YQZB_T_YJXX = "YQZB_T_YJXX";
     private Logger logger = LoggerFactory.getLogger(ScheduledTasks.class);
-    @Autowired
-    @Qualifier("user302JdbcTemplate")
-    JdbcTemplate user302jdbcTemplate;
 
     @Autowired
-    @Qualifier("user303JdbcTemplate")
-    JdbcTemplate user303jdbcTemplate;
+    @Qualifier("user195JdbcTemplate")
+    JdbcTemplate user195jdbcTemplate;
 
     @Autowired
-    @Qualifier("user304JdbcTemplate")
-    JdbcTemplate user304jdbcTemplate;
+    @Qualifier("user196JdbcTemplate")
+    JdbcTemplate user196jdbcTemplate;
 
     @Autowired
-    @Qualifier("user305JdbcTemplate")
-    JdbcTemplate user305jdbcTemplate;
+    @Qualifier("user197JdbcTemplate")
+    JdbcTemplate user197jdbcTemplate;
+
+    @Autowired
+    @Qualifier("user205JdbcTemplate")
+    JdbcTemplate user205jdbcTemplate;
+    
+    @Autowired
+    @Qualifier("user206JdbcTemplate")
+    JdbcTemplate user206jdbcTemplate;
+    
+    @Autowired
+    @Qualifier("user207JdbcTemplate")
+    JdbcTemplate user207jdbcTemplate;
+    
+    @Autowired
+    @Qualifier("user2JdbcTemplate")
+    JdbcTemplate user2jdbcTemplate;
+    
+    @Autowired
+    @Qualifier("user3JdbcTemplate")
+    JdbcTemplate user3jdbcTemplate;
+    
+    @Autowired
+    @Qualifier("user4JdbcTemplate")
+    JdbcTemplate user4jdbcTemplate;
+    
+    @Autowired
+    @Qualifier("user5JdbcTemplate")
+    JdbcTemplate user5jdbcTemplate;
 
     /**
      * 根据用户配置区分操作数据源
@@ -80,13 +112,36 @@ public class ScheduledTasks {
         if (StringUtils.isNotBlank(userInfo.get("KU_DBNAME").toString())
                 && DB_NAME_30_4.equals(userInfo.get("KU_DBNAME").toString())) {
             // 删除用户数据 or 备份用户数据
-            this.clearData(userInfo, this.user304jdbcTemplate);
+            this.clearData(userInfo, this.user4jdbcTemplate);
         } else if (StringUtils.isNotBlank(userInfo.get("KU_DBNAME").toString())
                 && DB_NAME_30_5.equals(userInfo.get("KU_DBNAME").toString())) {
             // 删除用户数据 or 备份用户数据
-            this.clearData(userInfo, this.user305jdbcTemplate);
+            this.clearData(userInfo, this.user5jdbcTemplate);
+        }else if (StringUtils.isNotBlank(userInfo.get("KU_DBNAME").toString())
+                && DB_NAME_16_195.equals(userInfo.get("KU_DBNAME").toString())) {
+            // 删除用户数据 or 备份用户数据
+            this.clearData(userInfo, this.user195jdbcTemplate);
+        }else if (StringUtils.isNotBlank(userInfo.get("KU_DBNAME").toString())
+                && DB_NAME_16_196.equals(userInfo.get("KU_DBNAME").toString())) {
+            // 删除用户数据 or 备份用户数据
+            this.clearData(userInfo, this.user5jdbcTemplate);
+        }else if (StringUtils.isNotBlank(userInfo.get("KU_DBNAME").toString())
+                && DB_NAME_16_197.equals(userInfo.get("KU_DBNAME").toString())) {
+            // 删除用户数据 or 备份用户数据
+            this.clearData(userInfo, this.user197jdbcTemplate);
+        }else if (StringUtils.isNotBlank(userInfo.get("KU_DBNAME").toString())
+                && DB_NAME_17_205.equals(userInfo.get("KU_DBNAME").toString())) {
+            // 删除用户数据 or 备份用户数据
+            this.clearData(userInfo, this.user205jdbcTemplate);
+        }else if (StringUtils.isNotBlank(userInfo.get("KU_DBNAME").toString())
+                && DB_NAME_17_206.equals(userInfo.get("KU_DBNAME").toString())) {
+            // 删除用户数据 or 备份用户数据
+            this.clearData(userInfo, this.user206jdbcTemplate);
+        }else if (StringUtils.isNotBlank(userInfo.get("KU_DBNAME").toString())
+                && DB_NAME_17_207.equals(userInfo.get("KU_DBNAME").toString())) {
+            // 删除用户数据 or 备份用户数据
+            this.clearData(userInfo, this.user207jdbcTemplate);
         }
-        // ....
     }
     
     /**
@@ -140,18 +195,21 @@ public class ScheduledTasks {
     public void delete_YQZB_T_ENGINE_INFO(JdbcTemplate jdbcTemplate, String ku_id, String ku_name, String ku_dbName)
             throws Exception {
         StringBuffer querySQL = new StringBuffer();
-        querySQL.append("SELECT count(*) FROM U");
+        // querySQL.append("SELECT count(*) FROM U");
+        querySQL.append("DELETE FROM U");
         querySQL.append(ku_id);
         querySQL.append(".");
         querySQL.append("YQZB_T_ENGINE_INFO");
         querySQL.append(" WHERE KT_UUID NOT IN (");
         querySQL.append(this.getUserTopic().toString());
         querySQL.append(")");
+        querySQL.append(LIMIT);
         try {
-            List<?> list = jdbcTemplate.queryForList(querySQL.toString());
+            // List<?> list = jdbcTemplate.queryForList(querySQL.toString());
+            int count = jdbcTemplate.update(querySQL.toString());
             this.logger.info(
                     "用户：" + ku_name + "，从" + ku_dbName + "上删除【YQZB_T_ENGINE_INFO】表中数据："
-                            + list + "条");
+                            + count + "条");
         } catch (Exception e) {
             throw new Exception("{}删除表数据异常" + e);
         }
@@ -172,18 +230,21 @@ public class ScheduledTasks {
     public void deleteTableDataBy_KV_DTCTIME(JdbcTemplate jdbcTemplate, String tableName, String ku_id, String ku_name,
             String ku_dbName, int ku_saveDays) throws Exception {
         StringBuffer querySQL = new StringBuffer();
-        querySQL.append("SELECT count(*) FROM U");
+        // querySQL.append("SELECT count(*) FROM U");
+        querySQL.append("DELETE FROM U");
         querySQL.append(ku_id);
         querySQL.append(".");
         querySQL.append(tableName);
         querySQL.append(" WHERE KV_DTCTIME <= '");
         querySQL.append(DateUtil.dateToyyyyMMdd(DateUtil.addDay(new Date(), -ku_saveDays)));
         querySQL.append("'");
+        querySQL.append(LIMIT);
         try {
-            List<?> list = jdbcTemplate.queryForList(querySQL.toString());
+            // List<?> list = jdbcTemplate.queryForList(querySQL.toString());
+            int count = jdbcTemplate.update(querySQL.toString());
             this.logger.info(
                     "用户：" + ku_name + "，从" + ku_dbName + "上删除【" + tableName + "】表中" + +ku_saveDays + "天前的数据："
-                            + list + "条");
+                            + count + "条");
         } catch (Exception e) {
             throw new Exception("{}删除表数据异常" + e);
         }
@@ -205,18 +266,21 @@ public class ScheduledTasks {
     public void deleteTableDataBy_KV_TIME(JdbcTemplate jdbcTemplate, String tableName, String ku_id, String ku_name,
             String ku_dbName, int ku_saveDays) throws Exception {
         StringBuffer querySQL = new StringBuffer();
-        querySQL.append("SELECT count(*) FROM U");
+//        querySQL.append("SELECT count(*) FROM U");
+        querySQL.append("DELETE FROM U");
         querySQL.append(ku_id);
         querySQL.append(".");
         querySQL.append(tableName);
         querySQL.append(" WHERE KV_TIME <= '");
         querySQL.append(DateUtil.dateToyyyyMMdd(DateUtil.addDay(new Date(), -7)));
         querySQL.append("'");
+        querySQL.append(LIMIT);
         try{
-            List<?> list = jdbcTemplate.queryForList(querySQL.toString());
+            // List<?> list = jdbcTemplate.queryForList(querySQL.toString());
+            int count = jdbcTemplate.update(querySQL.toString());
             this.logger.info(
                     "用户：" + ku_name + "，从" + ku_dbName + "上删除【" + tableName + "】表中" + +ku_saveDays + "天前的数据："
-                            + list + "条");
+                            + count + "条");
         } catch (Exception e) {
             throw new Exception("{}删除表数据异常" + e);
         }
@@ -230,7 +294,7 @@ public class ScheduledTasks {
      * @throws Exception
      */
     public List<Map<String, Object>> getUserInfo() {
-        return this.user302jdbcTemplate.queryForList(
+        return this.user2jdbcTemplate.queryForList(
                 "SELECT u.KU_ID,u.KU_LID,u.ku_name,u.KU_DBNAME,us.KU_SAVEDAYS FROM yqms2.WK_T_USER u LEFT JOIN yqms2.WK_T_USERSERVICE us on u.KU_ID = us.KU_ID");
     }
 
@@ -241,7 +305,7 @@ public class ScheduledTasks {
      * @throws Exception
      */
     public StringBuffer getUserTopic() {
-        List<Map<String, Object>> list = this.user302jdbcTemplate
+        List<Map<String, Object>> list = this.user2jdbcTemplate
                 .queryForList("SELECT KT_UUID FROM yqms2.YQZB_T_TOPIC;");
         StringBuffer sb = new StringBuffer();
         for (int i = 0; i < list.size(); i++) {
@@ -261,10 +325,14 @@ public class ScheduledTasks {
      *
      * @throws Exception
      */
-    @Scheduled(cron = "0 39 18 ? * *")
+    // 17.52执行一次
+    // @Scheduled(cron = "0 52 17 ? * *")
+    // 每隔5秒钟执行一次
     // @Scheduled(fixedRate = 5000)
+    // 12点到6点，每隔1小时执行一次
+    @Scheduled(cron = "0 0/60 00-6 * * ?")
     public void reportCurrentTime() {
-        this.logger.debug("***************************定时任务开始执行**************************");
+        this.logger.info("***************************定时任务开始执行**************************");
         this.verificationUserInfo();
         // System.out.println(this.getUserTopic().toString());
     }

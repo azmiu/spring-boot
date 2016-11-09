@@ -38,56 +38,211 @@ import org.springframework.jdbc.core.JdbcTemplate;
  */
 @Configuration
 public class DataSourceConfig {
-
-    @Bean(name = "user305JdbcTemplate")
-    public JdbcTemplate five(@Qualifier("user305DataSource") DataSource dataSource) {
-        return new JdbcTemplate(dataSource);
-    }
-
-    @Bean(name = "user305DataSource")
-    @Qualifier("user305DataSource")
-    @ConfigurationProperties(prefix = "userinfo.five")
-    public DataSource fiveDataSource() {
-        return DataSourceBuilder.create().build();
-    }
-
-    @Bean(name = "user304JdbcTemplate")
-    public JdbcTemplate four(@Qualifier("user304DataSource") DataSource dataSource) {
-        return new JdbcTemplate(dataSource);
-    }
-
-    @Bean(name = "user304DataSource")
-    @Qualifier("user304DataSource")
-    @ConfigurationProperties(prefix = "userinfo.four")
-    public DataSource fourDataSource() {
-        return DataSourceBuilder.create().build();
-    }
-
     
-
-    @Bean(name = "user302DataSource")
-    @Qualifier("user302DataSource")
-    @ConfigurationProperties(prefix = "userinfo.two")
-    public DataSource primaryDataSource() {
+    /**
+     * 获取
+     * 192.168.30.2
+     * 数据源
+     *
+     * @return
+     * @throws Exception
+     */
+    @Bean(name = "user2DataSource")
+    @Qualifier("user2DataSource")
+    @ConfigurationProperties(prefix = "userinfo.2")
+    public DataSource getDataSource2() {
         return DataSourceBuilder.create().build();
     }
 
-    @Bean(name = "user302JdbcTemplate")
-    public JdbcTemplate primaryJdbcTemplate(@Qualifier("user302DataSource") DataSource dataSource) {
+    @Bean(name = "user2JdbcTemplate")
+    public JdbcTemplate getTemplate2(@Qualifier("user2DataSource") DataSource dataSource) {
         return new JdbcTemplate(dataSource);
     }
-
-    @Bean(name = "303DataSource")
-    @Qualifier("303DataSource")
+    /**
+     * 获取
+     * 192.168.30.3
+     * 数据源
+     *
+     * @return
+     * @throws Exception
+     */
+    @Bean(name = "user3DataSource")
+    @Qualifier("user3DataSource")
     @Primary
-    @ConfigurationProperties(prefix = "userinfo.three")
-    public DataSource secondaryDataSource() {
+    @ConfigurationProperties(prefix = "userinfo.3")
+    public DataSource getDataSource3() {
         return DataSourceBuilder.create().build();
     }
 
-    @Bean(name = "user303JdbcTemplate")
-    public JdbcTemplate secondaryJdbcTemplate(@Qualifier("303DataSource") DataSource dataSource) {
+    @Bean(name = "user3JdbcTemplate")
+    public JdbcTemplate getJdbcTemplate3(@Qualifier("user3DataSource") DataSource dataSource) {
         return new JdbcTemplate(dataSource);
     }
+    
+    /**
+     * 获取
+     * 192.168.30.4
+     * 数据源
+     *
+     * @return
+     * @throws Exception
+     */
+    @Bean(name = "user4DataSource")
+    @Qualifier("user4DataSource")
+    @ConfigurationProperties(prefix = "userinfo.4")
+    public DataSource getDataSource4() {
+        return DataSourceBuilder.create().build();
+    }
+    
+    @Bean(name = "user4JdbcTemplate")
+    public JdbcTemplate getTemplate4(@Qualifier("user4DataSource") DataSource dataSource) {
+        return new JdbcTemplate(dataSource);
+    }
+    
+    /**
+     * 获取
+     * 192.168.30.5
+     * 数据源
+     *
+     * @param dataSource
+     * @return
+     * @throws Exception
+     */
+    @Bean(name = "user5DataSource")
+    @Qualifier("user5DataSource")
+    @ConfigurationProperties(prefix = "userinfo.5")
+    public DataSource getDataSource5() {
+        return DataSourceBuilder.create().build();
+    }
 
+    @Bean(name = "user5JdbcTemplate")
+    public JdbcTemplate getTemplate5(@Qualifier("user5DataSource") DataSource dataSource) {
+        return new JdbcTemplate(dataSource);
+    }
+    
+    /**
+     * 获取
+     * 192.168.16.195
+     * 数据源
+     *
+     * @param dataSource
+     * @return
+     * @throws Exception
+     */
+    @Bean(name = "user195DataSource")
+    @Qualifier("user195DataSource")
+    @ConfigurationProperties(prefix = "userinfo.195")
+    public DataSource getDataSource195() {
+        return DataSourceBuilder.create().build();
+    }
+
+    @Bean(name = "user195JdbcTemplate")
+    public JdbcTemplate getTemplate195(@Qualifier("user195DataSource") DataSource dataSource) {
+        return new JdbcTemplate(dataSource);
+    }
+    
+    /**
+     * 获取
+     * 192.168.16.196
+     * 数据源
+     *
+     * @param dataSource
+     * @return
+     * @throws Exception
+     */
+    @Bean(name = "user196DataSource")
+    @Qualifier("user196DataSource")
+    @ConfigurationProperties(prefix = "userinfo.196")
+    public DataSource getDataSource196() {
+        return DataSourceBuilder.create().build();
+    }
+
+    @Bean(name = "user196JdbcTemplate")
+    public JdbcTemplate getTemplate196(@Qualifier("user196DataSource") DataSource dataSource) {
+        return new JdbcTemplate(dataSource);
+    }
+    
+    /**
+     * 获取
+     * 192.168.16.197
+     * 数据源
+     *
+     * @param dataSource
+     * @return
+     * @throws Exception
+     */
+    @Bean(name = "user197DataSource")
+    @Qualifier("user197DataSource")
+    @ConfigurationProperties(prefix = "userinfo.197")
+    public DataSource getDataSource197() {
+        return DataSourceBuilder.create().build();
+    }
+
+    @Bean(name = "user197JdbcTemplate")
+    public JdbcTemplate getTemplate197(@Qualifier("user197DataSource") DataSource dataSource) {
+        return new JdbcTemplate(dataSource);
+    }
+    
+    /**
+     * 获取
+     * 192.168.17.205
+     * 数据源
+     *
+     * @param dataSource
+     * @return
+     * @throws Exception
+     */
+    @Bean(name = "user205DataSource")
+    @Qualifier("user205DataSource")
+    @ConfigurationProperties(prefix = "userinfo.205")
+    public DataSource getDataSource205() {
+        return DataSourceBuilder.create().build();
+    }
+
+    @Bean(name = "user205JdbcTemplate")
+    public JdbcTemplate getTemplate205(@Qualifier("user205DataSource") DataSource dataSource) {
+        return new JdbcTemplate(dataSource);
+    }
+    
+    /**
+     * 获取
+     * 192.168.17.206
+     * 数据源
+     *
+     * @param dataSource
+     * @return
+     * @throws Exception
+     */
+    @Bean(name = "user206DataSource")
+    @Qualifier("user206DataSource")
+    @ConfigurationProperties(prefix = "userinfo.206")
+    public DataSource getDataSource206() {
+        return DataSourceBuilder.create().build();
+    }
+
+    @Bean(name = "user206JdbcTemplate")
+    public JdbcTemplate getTemplate206(@Qualifier("user206DataSource") DataSource dataSource) {
+        return new JdbcTemplate(dataSource);
+    }
+    
+    /**
+     * 获取
+     * 192.168.17.207
+     * 数据源
+     *
+     * @param dataSource
+     * @return
+     * @throws Exception
+     */
+    @Bean(name = "user207DataSource")
+    @Qualifier("user207DataSource")
+    @ConfigurationProperties(prefix = "userinfo.207")
+    public DataSource getDataSource207() {
+        return DataSourceBuilder.create().build();
+    }
+
+    @Bean(name = "user207JdbcTemplate")
+    public JdbcTemplate getTemplate207(@Qualifier("user207DataSource") DataSource dataSource) {
+        return new JdbcTemplate(dataSource);
+    }
 }
