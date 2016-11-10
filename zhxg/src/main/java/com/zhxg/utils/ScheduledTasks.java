@@ -55,7 +55,7 @@ public class ScheduledTasks {
     private final static String DB_NAME_30_5 = "192.168.30.5";
     private final static String LIMIT = " LIMIT 20000";
     private static List<String> logsList;
-    private final static int TABLE_SAVE_DAY = 10;
+    private final static int TABLE_SAVE_DAY = 7;
     private final static String WK_T_EVERYDAYDATA = "WK_T_EVERYDAYDATA";
     private final static String WK_T_VALIDATION_INFO = "WK_T_VALIDATION_INFO";
     private final static String WK_T_VALIDATION_INFOCNT = "WK_T_VALIDATION_INFOCNT";
@@ -114,11 +114,11 @@ public class ScheduledTasks {
      * @throws Exception
      */
     // 17.52执行一次
-    @Scheduled(cron = "0 40 16 ? * *")
+    // @Scheduled(cron = "0 40 16 ? * *")
     // 每隔5秒钟执行一次
     // @Scheduled(fixedRate = 5000)
     // 12点到6点，每隔1小时执行一次
-    // @Scheduled(cron = "0 0/60 00-6 * * ?")
+    @Scheduled(cron = "0 0/60 00-3 * * ?")
     public void reportCurrentTime() {
         this.logger.info("***************************定时任务开始执行**************************");
         // 校验用户信息
@@ -223,25 +223,30 @@ public class ScheduledTasks {
             // 删除WK_T_VALIDATION_REF表数据
             this.deleteTableDataBy_KV_DTCTIME(jdbcTemplate, WK_T_VALIDATION_REF, ku_id, ku_name, ku_dbName,
                     ku_saveDays);
+
             // 删除WK_T_VALIDATION_LOCATIONREF表数据
             this.deleteTableDataBy_KV_DTCTIME(jdbcTemplate, WK_T_VALIDATION_LOCATIONREF, ku_id, ku_name, ku_dbName,
                     ku_saveDays);
+
             // 删除YQZB_T_YJXX表数据，删除7天前数据
-            this.deleteTableDataBy_KV_DTCTIME(jdbcTemplate, YQZB_T_YJXX, ku_id, ku_name, ku_dbName, 7);
-            // 删除YQZB_T_ENGINE_INFO表数据
+            // this.deleteTableDataBy_KV_DTCTIME(jdbcTemplate, YQZB_T_YJXX, ku_id, ku_name, ku_dbName, 7);
 
             // 删除WK_T_VALIDATION_INFO表数据
             this.deleteTableDataBy_KV_DTCTIME(jdbcTemplate, WK_T_VALIDATION_INFO, ku_id, ku_name, ku_dbName,
                     ku_saveDays);
+
             // 删除WK_T_VALIDATION_INFOCNT表数据
             this.deleteTableDataBy_KV_DTCTIME(jdbcTemplate, WK_T_VALIDATION_INFOCNT, ku_id, ku_name, ku_dbName,
                     ku_saveDays);
+
             // 删除WK_T_EVERYDAYDATA表数据
             this.deleteTableDataBy_KV_TIME(jdbcTemplate, WK_T_EVERYDAYDATA, ku_id, ku_name, ku_dbName, ku_saveDays);
+
             // 删除YQZB_T_ENGINE_INFO表数据
             this.delete_YQZB_T_ENGINE_INFO(jdbcTemplate, ku_id, ku_name, ku_dbName);
+
             logsList.add(0, "用户：" + ku_name + "一共剩余" + allCount + "条未删除数据");
-            // this.logger.info("存入redis库的数据" + logsList.toString());
+
             // 将用户剩余数据信息存入redis
             this.setList(ku_id, logsList);
         } else {
@@ -463,7 +468,7 @@ public class ScheduledTasks {
             sb.append("DROP TABLE ");
             sb.append(tableName);
             this.logger.info("要删除的表名是：" + tableName);
-            // this.user3jdbcTemplate.execute(sb.toString());
+            this.user3jdbcTemplate.execute(sb.toString());
         }
     }
 
