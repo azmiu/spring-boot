@@ -53,6 +53,20 @@ public class DateUtil {
      * @return
      * @throws Exception
      */
+    public static String dateToString(Date time) {
+        SimpleDateFormat formatter;
+        formatter = new SimpleDateFormat("yyyyMMdd");
+        String ctime = formatter.format(time);
+        return ctime;
+    }
+
+    /**
+     * date转yyyyMMddhhmmss格式String类型时间
+     * 
+     * @param time
+     * @return
+     * @throws Exception
+     */
     public static String dateToyyyyMMdd(Date time) {
         SimpleDateFormat formatter;
         formatter = new SimpleDateFormat("yyyy-MM-dd");
