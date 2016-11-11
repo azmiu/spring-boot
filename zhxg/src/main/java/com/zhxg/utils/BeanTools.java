@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.core.StringRedisTemplate;
 
 @Configuration
 public class BeanTools implements ApplicationContextAware {
@@ -30,11 +31,17 @@ public class BeanTools implements ApplicationContextAware {
         }
     }
 
+    /**
+     * 获取StringRedisTemplate实例
+     *
+     * @param clazz
+     * @return
+     * @throws Exception
+     */
+    public static StringRedisTemplate getBean(Class<StringRedisTemplate> clazz) {
+        return applicationContext.getBean(clazz);
 
-    public static void setApplicationContext1(ApplicationContext context) {
-        applicationContext = context;
     }
-
 
 
     @Override

@@ -12,6 +12,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
 
 /**
  * <p>
@@ -39,8 +41,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
  * <p>
  * Version: v1.0
  */
-// @Component
-public class ScheduledTasks {
+@Component
+public class CountSurplusDataScheduledTasks {
 
     private static int allCount;
     private final static String DB_NAME_16_195 = "192.168.16.195";
@@ -51,16 +53,13 @@ public class ScheduledTasks {
     private final static String DB_NAME_17_207 = "192.168.17.207";
     private final static String DB_NAME_30_4 = "192.168.30.4";
     private final static String DB_NAME_30_5 = "192.168.30.5";
-    private final static String LIMIT = " LIMIT 20000";
     private static List<String> logsList;
-    private final static int TABLE_SAVE_DAY = 7;
     private final static String WK_T_EVERYDAYDATA = "WK_T_EVERYDAYDATA";
     private final static String WK_T_VALIDATION_INFO = "WK_T_VALIDATION_INFO";
     private final static String WK_T_VALIDATION_INFOCNT = "WK_T_VALIDATION_INFOCNT";
     private final static String WK_T_VALIDATION_LOCATIONREF = "WK_T_VALIDATION_LOCATIONREF";
     private final static String WK_T_VALIDATION_REF = "WK_T_VALIDATION_REF";
-    private final static String YQZB_T_YJXX = "YQZB_T_YJXX";
-    private Logger logger = LoggerFactory.getLogger(ScheduledTasks.class);
+    private Logger logger = LoggerFactory.getLogger(CountSurplusDataScheduledTasks.class);
 
 
     @Autowired
@@ -112,7 +111,7 @@ public class ScheduledTasks {
      * @throws Exception
      */
     // 17.52执行一次
-    // @Scheduled(cron = "0 40 16 ? * *")
+    @Scheduled(cron = "0 15 17 ? * *")
     // 每隔5秒钟执行一次
     // @Scheduled(fixedRate = 5000)
     // 12点到6点，每隔1小时执行一次
@@ -121,8 +120,6 @@ public class ScheduledTasks {
         this.logger.info("***************************定时任务开始执行**************************");
         // 校验用户信息
         this.verificationUserInfo();
-        // 校验表信息
-        this.verificationTableInfo();
     }
     
     /**
@@ -167,35 +164,35 @@ public class ScheduledTasks {
         if (StringUtils.isNotBlank(userInfo.get("KU_DBNAME").toString())
                 && DB_NAME_30_4.equals(userInfo.get("KU_DBNAME").toString())) {
             // 删除用户数据 or 备份用户数据
-            this.clearData(userInfo, this.user4jdbcTemplate);
+            this.countData(userInfo, this.user4jdbcTemplate);
         } else if (StringUtils.isNotBlank(userInfo.get("KU_DBNAME").toString())
                 && DB_NAME_30_5.equals(userInfo.get("KU_DBNAME").toString())) {
             // 删除用户数据 or 备份用户数据
-            this.clearData(userInfo, this.user5jdbcTemplate);
+            this.countData(userInfo, this.user5jdbcTemplate);
         } else if (StringUtils.isNotBlank(userInfo.get("KU_DBNAME").toString())
                 && DB_NAME_16_195.equals(userInfo.get("KU_DBNAME").toString())) {
             // 删除用户数据 or 备份用户数据
-            this.clearData(userInfo, this.user195jdbcTemplate);
+            this.countData(userInfo, this.user195jdbcTemplate);
         } else if (StringUtils.isNotBlank(userInfo.get("KU_DBNAME").toString())
                 && DB_NAME_16_196.equals(userInfo.get("KU_DBNAME").toString())) {
             // 删除用户数据 or 备份用户数据
-            this.clearData(userInfo, this.user5jdbcTemplate);
+            this.countData(userInfo, this.user5jdbcTemplate);
         } else if (StringUtils.isNotBlank(userInfo.get("KU_DBNAME").toString())
                 && DB_NAME_16_197.equals(userInfo.get("KU_DBNAME").toString())) {
             // 删除用户数据 or 备份用户数据
-            this.clearData(userInfo, this.user197jdbcTemplate);
+            this.countData(userInfo, this.user197jdbcTemplate);
         } else if (StringUtils.isNotBlank(userInfo.get("KU_DBNAME").toString())
                 && DB_NAME_17_205.equals(userInfo.get("KU_DBNAME").toString())) {
             // 删除用户数据 or 备份用户数据
-            this.clearData(userInfo, this.user205jdbcTemplate);
+            this.countData(userInfo, this.user205jdbcTemplate);
         } else if (StringUtils.isNotBlank(userInfo.get("KU_DBNAME").toString())
                 && DB_NAME_17_206.equals(userInfo.get("KU_DBNAME").toString())) {
             // 删除用户数据 or 备份用户数据
-            this.clearData(userInfo, this.user206jdbcTemplate);
+            this.countData(userInfo, this.user206jdbcTemplate);
         } else if (StringUtils.isNotBlank(userInfo.get("KU_DBNAME").toString())
                 && DB_NAME_17_207.equals(userInfo.get("KU_DBNAME").toString())) {
             // 删除用户数据 or 备份用户数据
-            this.clearData(userInfo, this.user207jdbcTemplate);
+            this.countData(userInfo, this.user207jdbcTemplate);
         }
     }
 
@@ -206,7 +203,7 @@ public class ScheduledTasks {
      * @param jdbcTemplate
      * @throws Exception
      */
-    public void clearData(Map<String, Object> userInfo, JdbcTemplate jdbcTemplate) throws Exception {
+    public void countData(Map<String, Object> userInfo, JdbcTemplate jdbcTemplate) throws Exception {
         if (null != jdbcTemplate && !userInfo.isEmpty()) {
             String ku_id = userInfo.get("KU_ID").toString();
             String ku_name = userInfo.get("KU_LID").toString();
@@ -219,29 +216,26 @@ public class ScheduledTasks {
             allCount = 0;
 
             // 删除WK_T_VALIDATION_REF表数据
-            this.deleteTableDataBy_KV_DTCTIME(jdbcTemplate, WK_T_VALIDATION_REF, ku_id, ku_name, ku_dbName,
+            this.countTableDataBy_KV_DTCTIME(jdbcTemplate, WK_T_VALIDATION_REF, ku_id, ku_name, ku_dbName,
                     ku_saveDays);
 
             // 删除WK_T_VALIDATION_LOCATIONREF表数据
-            this.deleteTableDataBy_KV_DTCTIME(jdbcTemplate, WK_T_VALIDATION_LOCATIONREF, ku_id, ku_name, ku_dbName,
+            this.countTableDataBy_KV_DTCTIME(jdbcTemplate, WK_T_VALIDATION_LOCATIONREF, ku_id, ku_name, ku_dbName,
                     ku_saveDays);
 
-            // 删除YQZB_T_YJXX表数据，删除7天前数据
-            // this.deleteTableDataBy_KV_DTCTIME(jdbcTemplate, YQZB_T_YJXX, ku_id, ku_name, ku_dbName, 7);
-
             // 删除WK_T_VALIDATION_INFO表数据
-            this.deleteTableDataBy_KV_DTCTIME(jdbcTemplate, WK_T_VALIDATION_INFO, ku_id, ku_name, ku_dbName,
+            this.countTableDataBy_KV_DTCTIME(jdbcTemplate, WK_T_VALIDATION_INFO, ku_id, ku_name, ku_dbName,
                     ku_saveDays);
 
             // 删除WK_T_VALIDATION_INFOCNT表数据
-            this.deleteTableDataBy_KV_DTCTIME(jdbcTemplate, WK_T_VALIDATION_INFOCNT, ku_id, ku_name, ku_dbName,
+            this.countTableDataBy_KV_DTCTIME(jdbcTemplate, WK_T_VALIDATION_INFOCNT, ku_id, ku_name, ku_dbName,
                     ku_saveDays);
 
             // 删除WK_T_EVERYDAYDATA表数据
-            this.deleteTableDataBy_KV_TIME(jdbcTemplate, WK_T_EVERYDAYDATA, ku_id, ku_name, ku_dbName, ku_saveDays);
+            this.countTableDataBy_KV_TIME(jdbcTemplate, WK_T_EVERYDAYDATA, ku_id, ku_name, ku_dbName, ku_saveDays);
 
             // 删除YQZB_T_ENGINE_INFO表数据
-            this.delete_YQZB_T_ENGINE_INFO(jdbcTemplate, ku_id, ku_name, ku_dbName);
+            this.count_YQZB_T_ENGINE_INFO(jdbcTemplate, ku_id, ku_name, ku_dbName);
 
             logsList.add(0, allCount + "");
 
@@ -264,31 +258,19 @@ public class ScheduledTasks {
      * @param ku_saveDays
      * @throws Exception
      */
-    public void deleteTableDataBy_KV_DTCTIME(JdbcTemplate jdbcTemplate, String tableName, String ku_id, String ku_name,
+    public void countTableDataBy_KV_DTCTIME(JdbcTemplate jdbcTemplate, String tableName, String ku_id, String ku_name,
             String ku_dbName, int ku_saveDays) throws Exception {
-        StringBuffer deleteSQL = new StringBuffer();
-        deleteSQL.append("DELETE FROM U");
-        deleteSQL.append(ku_id);
-        deleteSQL.append(".");
-        deleteSQL.append(tableName);
-        deleteSQL.append(" WHERE KV_DTCTIME <= '");
-        deleteSQL.append(DateUtil.dateToyyyyMMdd(DateUtil.addDay(new Date(), -ku_saveDays)));
-        deleteSQL.append("'");
-        deleteSQL.append(LIMIT);
+
+        StringBuffer querySQL = new StringBuffer();
+        querySQL.append("SELECT count(1) FROM U");
+        querySQL.append(ku_id);
+        querySQL.append(".");
+        querySQL.append(tableName);
+        querySQL.append(" WHERE KV_DTCTIME <= '");
+        querySQL.append(DateUtil.dateToyyyyMMdd(DateUtil.addDay(new Date(), -ku_saveDays)));
+        querySQL.append("'");
         try {
 
-            int count = jdbcTemplate.update(deleteSQL.toString());
-            this.logger.info(
-                    "用户：" + ku_name + "，从" + ku_dbName + "上删除【" + tableName + "】表中" + +ku_saveDays + "天前的数据："
-                            + count + "条");
-            StringBuffer querySQL = new StringBuffer();
-            querySQL.append("SELECT count(1) FROM U");
-            querySQL.append(ku_id);
-            querySQL.append(".");
-            querySQL.append(tableName);
-            querySQL.append(" WHERE KV_DTCTIME <= '");
-            querySQL.append(DateUtil.dateToyyyyMMdd(DateUtil.addDay(new Date(), -ku_saveDays)));
-            querySQL.append("'");
             List<Map<String, Object>> list = jdbcTemplate.queryForList(querySQL.toString());
             StringBuffer sb = new StringBuffer();
             sb.append("用户：");
@@ -304,6 +286,7 @@ public class ScheduledTasks {
             sb.append("条");
             logsList.add(sb.toString());
             allCount += Integer.valueOf(list.get(0).get("count(1)").toString());
+            this.logger.info(sb.toString());
         } catch (Exception e) {
             throw new Exception("{}删除表数据异常" + e);
         }
@@ -321,30 +304,18 @@ public class ScheduledTasks {
      * @param ku_saveDays
      * @throws Exception
      */
-    public void deleteTableDataBy_KV_TIME(JdbcTemplate jdbcTemplate, String tableName, String ku_id, String ku_name,
+    public void countTableDataBy_KV_TIME(JdbcTemplate jdbcTemplate, String tableName, String ku_id, String ku_name,
             String ku_dbName, int ku_saveDays) throws Exception {
-        StringBuffer deleteSQL = new StringBuffer();
-        deleteSQL.append("DELETE FROM U");
-        deleteSQL.append(ku_id);
-        deleteSQL.append(".");
-        deleteSQL.append(tableName);
-        deleteSQL.append(" WHERE KV_TIME <= '");
-        deleteSQL.append(DateUtil.dateToyyyyMMdd(DateUtil.addDay(new Date(), -7)));
-        deleteSQL.append("'");
-        deleteSQL.append(LIMIT);
+
+        StringBuffer querySQL = new StringBuffer();
+        querySQL.append("SELECT count(1) FROM U");
+        querySQL.append(ku_id);
+        querySQL.append(".");
+        querySQL.append(tableName);
+        querySQL.append(" WHERE KV_TIME <= '");
+        querySQL.append(DateUtil.dateToyyyyMMdd(DateUtil.addDay(new Date(), -7)));
+        querySQL.append("'");
         try {
-            int count = jdbcTemplate.update(deleteSQL.toString());
-            this.logger.info(
-                    "用户：" + ku_name + "，从" + ku_dbName + "上删除【" + tableName + "】表中" + +ku_saveDays + "天前的数据："
-                            + count + "条");
-            StringBuffer querySQL = new StringBuffer();
-            querySQL.append("SELECT count(1) FROM U");
-            querySQL.append(ku_id);
-            querySQL.append(".");
-            querySQL.append(tableName);
-            querySQL.append(" WHERE KV_TIME <= '");
-            querySQL.append(DateUtil.dateToyyyyMMdd(DateUtil.addDay(new Date(), -7)));
-            querySQL.append("'");
             List<Map<String, Object>> list = jdbcTemplate.queryForList(querySQL.toString());
             StringBuffer sb = new StringBuffer();
             sb.append("用户：");
@@ -360,6 +331,7 @@ public class ScheduledTasks {
             sb.append("条");
             logsList.add(sb.toString());
             allCount += Integer.valueOf(list.get(0).get("count(1)").toString());
+            this.logger.info(sb.toString());
         } catch (Exception e) {
             throw new Exception("{}删除表数据异常" + e);
         }
@@ -377,23 +349,9 @@ public class ScheduledTasks {
      * @throws Exception
      * @throws Exception
      */
-    public void delete_YQZB_T_ENGINE_INFO(JdbcTemplate jdbcTemplate, String ku_id, String ku_name, String ku_dbName)
+    public void count_YQZB_T_ENGINE_INFO(JdbcTemplate jdbcTemplate, String ku_id, String ku_name, String ku_dbName)
             throws Exception {
-        StringBuffer deleteSQL = new StringBuffer();
-        // querySQL.append("SELECT count(*) FROM U");
-        deleteSQL.append("DELETE FROM U");
-        deleteSQL.append(ku_id);
-        deleteSQL.append(".");
-        deleteSQL.append("YQZB_T_ENGINE_INFO");
-        deleteSQL.append(" WHERE KT_UUID NOT IN (");
-        deleteSQL.append(this.getUserTopic().toString());
-        deleteSQL.append(")");
-        deleteSQL.append(LIMIT);
         try {
-            int count = jdbcTemplate.update(deleteSQL.toString());
-            this.logger.info(
-                    "用户：" + ku_name + "，从" + ku_dbName + "上删除【YQZB_T_ENGINE_INFO】表中数据："
-                            + count + "条");
             StringBuffer querySQL = new StringBuffer();
             querySQL.append("SELECT count(1) FROM U");
             querySQL.append(ku_id);
@@ -411,62 +369,9 @@ public class ScheduledTasks {
             sb.append("条数据");
             logsList.add(sb.toString());
             allCount += Integer.valueOf(list.get(0).get("count(1)").toString());
+            this.logger.info(sb.toString());
         } catch (Exception e) {
             throw new Exception("{}删除表数据异常" + e);
-        }
-    }
-
-    /**
-     * 校验匹配表
-     * 按表名生成的规则删除7天前的表
-     * WK_T_VALIDATION_INFO_20161105
-     * WK_T_VALIDATION_INFOCNT_20161105
-     *
-     * @throws Exception
-     */
-    public void verificationTableInfo() {
-        StringBuffer sbINFO = new StringBuffer();
-        sbINFO.append("SHOW TABLES LIKE '");
-        sbINFO.append("WK_T_VALIDATION_INFO_2%'");
-        StringBuffer sbINFOCNT = new StringBuffer();
-        sbINFOCNT.append("SHOW TABLES LIKE '");
-        sbINFOCNT.append("WK_T_VALIDATION_INFOCNT_2%'");
-        List<Map<String, Object>> infoList = this.user3jdbcTemplate.queryForList(sbINFO.toString());
-        for (int i = 0; i < infoList.size(); i++) {
-            String tableCreateTime = infoList.get(i).get("Tables_in_yqms2 (WK_T_VALIDATION_INFO_2%)").toString()
-                    .substring(
-                            21, infoList.get(i).get("Tables_in_yqms2 (WK_T_VALIDATION_INFO_2%)").toString().length());
-            // 判断表生成的时间是否在7天前
-            if (tableCreateTime.compareTo(DateUtil.dateToString(DateUtil.addDay(new Date(), -TABLE_SAVE_DAY))) < 0) {
-                this.dropTable(infoList.get(i).get("Tables_in_yqms2 (WK_T_VALIDATION_INFO_2%)").toString());
-            }
-        }
-        List<Map<String, Object>> infocntList = this.user3jdbcTemplate.queryForList(sbINFOCNT.toString());
-        for (int i = 0; i < infocntList.size(); i++) {
-            String tableCreateTime = infocntList.get(i).get("Tables_in_yqms2 (WK_T_VALIDATION_INFOCNT_2%)").toString()
-                    .substring(
-                            24,
-                            infocntList.get(i).get("Tables_in_yqms2 (WK_T_VALIDATION_INFOCNT_2%)").toString().length());
-            // 判断表生成的时间是否在7天前
-            if (tableCreateTime.compareTo(DateUtil.dateToString(DateUtil.addDay(new Date(), -TABLE_SAVE_DAY))) < 0) {
-                this.dropTable(infocntList.get(i).get("Tables_in_yqms2 (WK_T_VALIDATION_INFOCNT_2%)").toString());
-            }
-        }
-    }
-
-    /**
-     * 根据表名删除相应的表
-     *
-     * @param tableName
-     * @throws Exception
-     */
-    public void dropTable(String tableName) {
-        if (StringUtils.isNotBlank(tableName)) {
-            StringBuffer sb = new StringBuffer();
-            sb.append("DROP TABLE ");
-            sb.append(tableName);
-            this.logger.info("要删除的表名是：" + tableName);
-            this.user3jdbcTemplate.execute(sb.toString());
         }
     }
 
