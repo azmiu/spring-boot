@@ -23,7 +23,7 @@ import org.springframework.stereotype.Component;
  * <p>
  * Module ID: <模块类编号可以引用系统设计中的类编号>
  * <p>
- * Comments: 定时任务
+ * Comments: 统计剩余数据量定时任务
  * <p>
  * JDK version used: JDK1.8
  * <p>
@@ -288,7 +288,7 @@ public class CountSurplusDataScheduledTasks {
             allCount += Integer.valueOf(list.get(0).get("count(1)").toString());
             this.logger.info(sb.toString());
         } catch (Exception e) {
-            throw new Exception("{}删除表数据异常" + e);
+            throw new Exception("数据统计异常，{}" + e);
         }
     }
 
@@ -333,7 +333,7 @@ public class CountSurplusDataScheduledTasks {
             allCount += Integer.valueOf(list.get(0).get("count(1)").toString());
             this.logger.info(sb.toString());
         } catch (Exception e) {
-            throw new Exception("{}删除表数据异常" + e);
+            throw new Exception("数据统计异常，{}" + e);
         }
     }
 
@@ -371,7 +371,7 @@ public class CountSurplusDataScheduledTasks {
             allCount += Integer.valueOf(list.get(0).get("count(1)").toString());
             this.logger.info(sb.toString());
         } catch (Exception e) {
-            throw new Exception("{}删除表数据异常" + e);
+            throw new Exception("数据统计异常，{}" + e);
         }
     }
 

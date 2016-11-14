@@ -9,6 +9,32 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+/**
+ * <p>
+ * CopyRright (c)20014-2016: Azmiu
+ * <p>
+ * Project: zhxg
+ * <p>
+ * Module ID: <模块类编号可以引用系统设计中的类编号>
+ * <p>
+ * Comments: 数据删除定时任务多线程实现类
+ * <p>
+ * JDK version used: JDK1.8
+ * <p>
+ * NameSpace: com.zhxg.utils.DThread.java
+ * <p>
+ * Author: azmiu
+ * <p>
+ * Create Date: 2016年11月14日
+ * <p>
+ * Modified By: <修改人中文名或拼音缩写>
+ * <p>
+ * Modified Date: <修改日期>
+ * <p>
+ * Why & What is modified: <修改原因描述>
+ * <p>
+ * Version: v1.0
+ */
 public class DThread implements Runnable {
 
     // 定时删除任务每次删除的数据条目
@@ -33,7 +59,7 @@ public class DThread implements Runnable {
     @Override
     public void run() {
         try {
-            this.clearData(this.userinfo, this.jdbcTemplate);
+            this.processDataHandler(this.userinfo, this.jdbcTemplate);
             Thread.sleep(1000);
         } catch (Exception e) {
             this.logger.error("线程:" + Thread.currentThread().getName() + "执行 异常" + e);
@@ -47,7 +73,7 @@ public class DThread implements Runnable {
      * @param jdbcTemplate
      * @throws Exception
      */
-    public void clearData(Map<String, Object> userInfo, JdbcTemplate jdbcTemplate) throws Exception {
+    public void processDataHandler(Map<String, Object> userInfo, JdbcTemplate jdbcTemplate) throws Exception {
         if (null != jdbcTemplate && !userInfo.isEmpty()) {
             String ku_id = userInfo.get("KU_ID").toString();
             String ku_name = userInfo.get("KU_LID").toString();
@@ -55,25 +81,28 @@ public class DThread implements Runnable {
             // 用户未如设置保存天数，则默认为7天
             int ku_saveDays = StringUtils.isNotBlank(userInfo.get("KU_SAVEDAYS").toString())
                     ? Integer.valueOf(userInfo.get("KU_SAVEDAYS").toString()) : 7;
+//            String ku_status = userInfo.get("KU_STATUS").toString();
+            String ku_status = "0";
+            // 根据标示判断，保存用户数据还是备份用户数据
+            if ("0".equals(ku_status)) {
+                // 删除WK_T_VALIDATION_REF表数据
+                this.deleteTableDataBy_KV_DTCTIME(jdbcTemplate, WK_T_VALIDATION_REF, ku_id, ku_name, ku_dbName,
+                        ku_saveDays);
 
-            // 删除WK_T_VALIDATION_REF表数据
-            this.deleteTableDataBy_KV_DTCTIME(jdbcTemplate, WK_T_VALIDATION_REF, ku_id, ku_name, ku_dbName,
-                    ku_saveDays);
+                // 删除WK_T_VALIDATION_LOCATIONREF表数据
+                this.deleteTableDataBy_KV_DTCTIME(jdbcTemplate, WK_T_VALIDATION_LOCATIONREF, ku_id, ku_name, ku_dbName,
+                        ku_saveDays);
 
-            // 删除WK_T_VALIDATION_LOCATIONREF表数据
-            this.deleteTableDataBy_KV_DTCTIME(jdbcTemplate, WK_T_VALIDATION_LOCATIONREF, ku_id, ku_name, ku_dbName,
-                    ku_saveDays);
+                // 删除WK_T_VALIDATION_INFO表数据
+                this.deleteTableDataBy_KV_DTCTIME(jdbcTemplate, WK_T_VALIDATION_INFO, ku_id, ku_name, ku_dbName,
+                        ku_saveDays);
 
-            // 删除YQZB_T_YJXX表数据，删除7天前数据
-            // this.deleteTableDataBy_KV_DTCTIME(jdbcTemplate, YQZB_T_YJXX, ku_id, ku_name, ku_dbName, 7);
+                // 删除WK_T_VALIDATION_INFOCNT表数据
+                this.deleteTableDataBy_KV_DTCTIME(jdbcTemplate, WK_T_VALIDATION_INFOCNT, ku_id, ku_name, ku_dbName,
+                        ku_saveDays);
+            } else {
 
-            // 删除WK_T_VALIDATION_INFO表数据
-            this.deleteTableDataBy_KV_DTCTIME(jdbcTemplate, WK_T_VALIDATION_INFO, ku_id, ku_name, ku_dbName,
-                    ku_saveDays);
-
-            // 删除WK_T_VALIDATION_INFOCNT表数据
-            this.deleteTableDataBy_KV_DTCTIME(jdbcTemplate, WK_T_VALIDATION_INFOCNT, ku_id, ku_name, ku_dbName,
-                    ku_saveDays);
+            }
 
             // 删除WK_T_EVERYDAYDATA表数据
             this.deleteTableDataBy_KV_TIME(jdbcTemplate, WK_T_EVERYDAYDATA, ku_id, ku_name, ku_dbName, ku_saveDays);
@@ -116,7 +145,7 @@ public class DThread implements Runnable {
                     "用户：" + ku_name + "，从" + ku_dbName + "上删除【" + tableName + "】表中" + +ku_saveDays + "天前的数据："
                             + count + "条");
         } catch (Exception e) {
-            throw new Exception("{}删除表数据异常" + e);
+            throw new Exception("删除表数据异常，{}" + e);
         }
     }
 
@@ -149,7 +178,7 @@ public class DThread implements Runnable {
                     "用户：" + ku_name + "，从" + ku_dbName + "上删除【" + tableName + "】表中" + +ku_saveDays + "天前的数据："
                             + count + "条");
         } catch (Exception e) {
-            throw new Exception("{}删除表数据异常" + e);
+            throw new Exception("删除表数据异常，{}" + e);
         }
     }
 
@@ -182,7 +211,7 @@ public class DThread implements Runnable {
                     "用户：" + ku_name + "，从" + ku_dbName + "上删除【YQZB_T_ENGINE_INFO】表中数据："
                             + count + "条");
         } catch (Exception e) {
-            throw new Exception("{}删除表数据异常" + e);
+            throw new Exception("删除表数据异常，{}" + e);
         }
     }
 
@@ -218,5 +247,45 @@ public class DThread implements Runnable {
      */
     public JdbcTemplate getJdbcTemplate(String beanName) {
         return (JdbcTemplate) BeanTools.getBean(beanName);
+    }
+
+    /**
+     * 根据表名复制表
+     * 表名为用户配置
+     *
+     * @param jdbcTemplate
+     * @param tableName
+     * @param ku_id
+     * @param ku_name
+     * @param ku_dbName
+     * @param ku_saveDays
+     * @throws Exception
+     */
+    public void copyTableByName(JdbcTemplate jdbcTemplate, String tableName, String ku_id, String ku_name,
+            String ku_dbName, int ku_saveDays) throws Exception {
+        StringBuffer createSQL = new StringBuffer();
+        createSQL.append("CREATE TABLE ");
+        createSQL.append(tableName);
+        createSQL.append("_");
+        createSQL.append(DateUtil.dateToString(DateUtil.addDay(new Date(), -ku_saveDays)));
+        createSQL.append("(");
+        createSQL.append("SELECT * FROM U");
+        createSQL.append(ku_id);
+        createSQL.append(".");
+        createSQL.append(tableName);
+        createSQL.append(" WHERE KV_DTCTIME <= '");
+        createSQL.append(DateUtil.dateToyyyyMMdd(DateUtil.addDay(new Date(), -ku_saveDays)));
+        createSQL.append("'");
+        createSQL.append(")");
+        try {
+
+            jdbcTemplate.execute(createSQL.toString());
+            this.logger.info(
+                    "用户：" + ku_name + "，从" + ku_dbName + "上，【" + tableName + "】表中复制" + +ku_saveDays + "天前的数据到【"
+                            + tableName + "_"
+                            + DateUtil.dateToString(DateUtil.addDay(new Date(), -ku_saveDays)) + "】表");
+        } catch (Exception e) {
+            throw new Exception("删除表数据异常，{}" + e);
+        }
     }
 }

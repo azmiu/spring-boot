@@ -21,7 +21,7 @@ import org.springframework.stereotype.Component;
  * <p>
  * Module ID: <模块类编号可以引用系统设计中的类编号>
  * <p>
- * Comments: 定时任务
+ * Comments: 删除数据定时任务
  * <p>
  * JDK version used: JDK1.8
  * <p>
@@ -138,7 +138,7 @@ public class DeleteDataScheduledTasks {
      */
     public List<Map<String, Object>> getUserInfo() {
         return this.user2jdbcTemplate.queryForList(
-                "SELECT u.KU_ID,u.KU_LID,u.ku_name,u.KU_DBNAME,us.KU_SAVEDAYS from yqms2.WK_T_USER u LEFT JOIN yqms2.WK_T_USERSERVICE us on u.KU_ID = us.KU_ID");
+                "SELECT u.KU_ID,u.KU_LID,u.ku_name,u.KU_DBNAME,us.KU_SAVEDAYS,u.KU_STATUS from yqms2.WK_T_USER u LEFT JOIN yqms2.WK_T_USERSERVICE us on u.KU_ID = us.KU_ID");
     }
 
     /**
@@ -153,50 +153,46 @@ public class DeleteDataScheduledTasks {
     public void checkDataSource(Map<String, Object> userInfo) throws Exception {
         if (StringUtils.isNotBlank(userInfo.get("KU_DBNAME").toString())
                 && DB_NAME_30_4.equals(userInfo.get("KU_DBNAME").toString())) {
-            // 删除用户数据 or 备份用户数据
-            // this.clearData(userInfo, this.user4jdbcTemplate);
-            DThread dt1 = new DThread(userInfo, this.user4jdbcTemplate);
-            // DThread dt3 = new DThread(userInfo, this.user4jdbcTemplate);
-            Thread th1 = new Thread(dt1, "定时任务线程NO1");
-            // Thread th3 = new Thread(dt3, "NO3");
-            th1.start();
-            // th3.start();
+            DThread dt = new DThread(userInfo, this.user4jdbcTemplate);
+            Thread th = new Thread(dt, "定时任务线程NO.1");
+            th.start();
         } else if (StringUtils.isNotBlank(userInfo.get("KU_DBNAME").toString())
                 && DB_NAME_30_5.equals(userInfo.get("KU_DBNAME").toString())) {
-            // 删除用户数据 or 备份用户数据
-            // this.clearData(userInfo, this.user5jdbcTemplate);
-            DThread dt2 = new DThread(userInfo, this.user5jdbcTemplate);
-            // DThread dt4 = new DThread(userInfo, this.user5jdbcTemplate);
-            Thread th2 = new Thread(dt2, "定时任务线程NO2");
-            // Thread th4 = new Thread(dt4, "NO4");
-            th2.start();
-            // th4.start();
+            DThread dt = new DThread(userInfo, this.user5jdbcTemplate);
+            Thread th = new Thread(dt, "定时任务线程NO.2");
+            th.start();
         }
-        // else if (StringUtils.isNotBlank(userInfo.get("KU_DBNAME").toString())
-        // && DB_NAME_16_195.equals(userInfo.get("KU_DBNAME").toString())) {
-        // // 删除用户数据 or 备份用户数据
-        // this.clearData(userInfo, this.user195jdbcTemplate);
-        // } else if (StringUtils.isNotBlank(userInfo.get("KU_DBNAME").toString())
-        // && DB_NAME_16_196.equals(userInfo.get("KU_DBNAME").toString())) {
-        // // 删除用户数据 or 备份用户数据
-        // this.clearData(userInfo, this.user5jdbcTemplate);
-        // } else if (StringUtils.isNotBlank(userInfo.get("KU_DBNAME").toString())
-        // && DB_NAME_16_197.equals(userInfo.get("KU_DBNAME").toString())) {
-        // // 删除用户数据 or 备份用户数据
-        // this.clearData(userInfo, this.user197jdbcTemplate);
-        // } else if (StringUtils.isNotBlank(userInfo.get("KU_DBNAME").toString())
-        // && DB_NAME_17_205.equals(userInfo.get("KU_DBNAME").toString())) {
-        // // 删除用户数据 or 备份用户数据
-        // this.clearData(userInfo, this.user205jdbcTemplate);
-        // } else if (StringUtils.isNotBlank(userInfo.get("KU_DBNAME").toString())
-        // && DB_NAME_17_206.equals(userInfo.get("KU_DBNAME").toString())) {
-        // // 删除用户数据 or 备份用户数据
-        // this.clearData(userInfo, this.user206jdbcTemplate);
-        // } else if (StringUtils.isNotBlank(userInfo.get("KU_DBNAME").toString())
-        // && DB_NAME_17_207.equals(userInfo.get("KU_DBNAME").toString())) {
-        // // 删除用户数据 or 备份用户数据
-        // this.clearData(userInfo, this.user207jdbcTemplate);
-        // }
+        else if (StringUtils.isNotBlank(userInfo.get("KU_DBNAME").toString())
+                && DB_NAME_16_195.equals(userInfo.get("KU_DBNAME").toString())) {
+            DThread dt = new DThread(userInfo, this.user195jdbcTemplate);
+            Thread th = new Thread(dt, "定时任务线程NO.3");
+            th.start();
+        } else if (StringUtils.isNotBlank(userInfo.get("KU_DBNAME").toString())
+                && DB_NAME_16_196.equals(userInfo.get("KU_DBNAME").toString())) {
+            DThread dt = new DThread(userInfo, this.user196jdbcTemplate);
+            Thread th = new Thread(dt, "定时任务线程NO.4");
+            th.start();
+        } else if (StringUtils.isNotBlank(userInfo.get("KU_DBNAME").toString())
+                && DB_NAME_16_197.equals(userInfo.get("KU_DBNAME").toString())) {
+            DThread dt = new DThread(userInfo, this.user197jdbcTemplate);
+            Thread th = new Thread(dt, "定时任务线程NO.5");
+            th.start();
+        } else if (StringUtils.isNotBlank(userInfo.get("KU_DBNAME").toString())
+                && DB_NAME_17_205.equals(userInfo.get("KU_DBNAME").toString())) {
+            DThread dt = new DThread(userInfo, this.user205jdbcTemplate);
+            Thread th = new Thread(dt, "定时任务线程NO.6");
+            th.start();
+        } else if (StringUtils.isNotBlank(userInfo.get("KU_DBNAME").toString())
+                && DB_NAME_17_206.equals(userInfo.get("KU_DBNAME").toString())) {
+            DThread dt = new DThread(userInfo, this.user206jdbcTemplate);
+            Thread th = new Thread(dt, "定时任务线程NO.7");
+            th.start();
+        } else if (StringUtils.isNotBlank(userInfo.get("KU_DBNAME").toString())
+                && DB_NAME_17_207.equals(userInfo.get("KU_DBNAME").toString())) {
+            DThread dt = new DThread(userInfo, this.user207jdbcTemplate);
+            Thread th = new Thread(dt, "定时任务线程NO.8");
+            th.start();
+        }
     }
 
     /**
