@@ -111,13 +111,13 @@ public class CountSurplusDataScheduledTasks {
      * @throws Exception
      */
     // 17.52执行一次
-    @Scheduled(cron = "0 15 17 ? * *")
+    @Scheduled(cron = "0 00 07 ? * *")
     // 每隔5秒钟执行一次
     // @Scheduled(fixedRate = 5000)
     // 12点到6点，每隔1小时执行一次
     // @Scheduled(cron = "0 0/60 00-3 * * ?")
     public void reportCurrentTime() {
-        this.logger.info("***************************定时任务开始执行**************************");
+        this.logger.info("***************************数据统计定时任务开始执行**************************");
         // 校验用户信息
         this.verificationUserInfo();
     }
