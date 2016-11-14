@@ -99,11 +99,11 @@ public class DeleteDataScheduledTasks {
      * @throws Exception
      */
     // 17.52执行一次
-    // @Scheduled(cron = "0 04 18 ? * *")
+    @Scheduled(cron = "0 40 16 ? * *")
     // 每隔5秒钟执行一次
     // @Scheduled(fixedRate = 5000)
     // 12点到3点，每隔10分钟执行一次
-    @Scheduled(cron = "0 0/20 00-6 * * ?")
+    // @Scheduled(cron = "0 0/20 00-6 * * ?")
     public void reportCurrentTime() {
         this.logger.info("**************************数据删除定时任务开始执行**************************");
         // 校验用户信息
@@ -138,7 +138,7 @@ public class DeleteDataScheduledTasks {
      */
     public List<Map<String, Object>> getUserInfo() {
         return this.user2jdbcTemplate.queryForList(
-                "SELECT u.KU_ID,u.KU_LID,u.ku_name,u.KU_DBNAME,us.KU_SAVEDAYS,u.KU_STATUS from yqms2.WK_T_USER u LEFT JOIN yqms2.WK_T_USERSERVICE us on u.KU_ID = us.KU_ID");
+                "SELECT u.KU_ID,u.KU_LID,u.ku_name,u.KU_DBNAME,us.KU_SAVEDAYS,us.KU_ISSAVEOVERDUEDATA from yqms2.WK_T_USER u LEFT JOIN yqms2.WK_T_USERSERVICE us on u.KU_ID = us.KU_ID");
     }
 
     /**
@@ -151,47 +151,34 @@ public class DeleteDataScheduledTasks {
      * @throws Exception
      */
     public void checkDataSource(Map<String, Object> userInfo) throws Exception {
+        ExecutorProcessPool pool = ExecutorProcessPool.getInstance();
         if (StringUtils.isNotBlank(userInfo.get("KU_DBNAME").toString())
                 && DB_NAME_30_4.equals(userInfo.get("KU_DBNAME").toString())) {
-            DThread dt = new DThread(userInfo, this.user4jdbcTemplate);
-            Thread th = new Thread(dt, "定时任务线程NO.1");
-            th.start();
+            pool.execute(new DThread(userInfo, this.user4jdbcTemplate));
+            // DThread dt = new DThread(userInfo, this.user4jdbcTemplate);
+            // Thread th = new Thread(dt, "定时任务线程NO.1");
+            // th.start();
         } else if (StringUtils.isNotBlank(userInfo.get("KU_DBNAME").toString())
                 && DB_NAME_30_5.equals(userInfo.get("KU_DBNAME").toString())) {
-            DThread dt = new DThread(userInfo, this.user5jdbcTemplate);
-            Thread th = new Thread(dt, "定时任务线程NO.2");
-            th.start();
-        }
-        else if (StringUtils.isNotBlank(userInfo.get("KU_DBNAME").toString())
+            pool.execute(new DThread(userInfo, this.user5jdbcTemplate));
+        } else if (StringUtils.isNotBlank(userInfo.get("KU_DBNAME").toString())
                 && DB_NAME_16_195.equals(userInfo.get("KU_DBNAME").toString())) {
-            DThread dt = new DThread(userInfo, this.user195jdbcTemplate);
-            Thread th = new Thread(dt, "定时任务线程NO.3");
-            th.start();
+            pool.execute(new DThread(userInfo, this.user195jdbcTemplate));
         } else if (StringUtils.isNotBlank(userInfo.get("KU_DBNAME").toString())
                 && DB_NAME_16_196.equals(userInfo.get("KU_DBNAME").toString())) {
-            DThread dt = new DThread(userInfo, this.user196jdbcTemplate);
-            Thread th = new Thread(dt, "定时任务线程NO.4");
-            th.start();
+            pool.execute(new DThread(userInfo, this.user196jdbcTemplate));
         } else if (StringUtils.isNotBlank(userInfo.get("KU_DBNAME").toString())
                 && DB_NAME_16_197.equals(userInfo.get("KU_DBNAME").toString())) {
-            DThread dt = new DThread(userInfo, this.user197jdbcTemplate);
-            Thread th = new Thread(dt, "定时任务线程NO.5");
-            th.start();
+            pool.execute(new DThread(userInfo, this.user197jdbcTemplate));
         } else if (StringUtils.isNotBlank(userInfo.get("KU_DBNAME").toString())
                 && DB_NAME_17_205.equals(userInfo.get("KU_DBNAME").toString())) {
-            DThread dt = new DThread(userInfo, this.user205jdbcTemplate);
-            Thread th = new Thread(dt, "定时任务线程NO.6");
-            th.start();
+            pool.execute(new DThread(userInfo, this.user205jdbcTemplate));
         } else if (StringUtils.isNotBlank(userInfo.get("KU_DBNAME").toString())
                 && DB_NAME_17_206.equals(userInfo.get("KU_DBNAME").toString())) {
-            DThread dt = new DThread(userInfo, this.user206jdbcTemplate);
-            Thread th = new Thread(dt, "定时任务线程NO.7");
-            th.start();
+            pool.execute(new DThread(userInfo, this.user206jdbcTemplate));
         } else if (StringUtils.isNotBlank(userInfo.get("KU_DBNAME").toString())
                 && DB_NAME_17_207.equals(userInfo.get("KU_DBNAME").toString())) {
-            DThread dt = new DThread(userInfo, this.user207jdbcTemplate);
-            Thread th = new Thread(dt, "定时任务线程NO.8");
-            th.start();
+            pool.execute(new DThread(userInfo, this.user207jdbcTemplate));
         }
     }
 

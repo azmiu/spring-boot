@@ -60,7 +60,6 @@ public class DThread implements Runnable {
     public void run() {
         try {
             this.processDataHandler(this.userinfo, this.jdbcTemplate);
-            Thread.sleep(1000);
         } catch (Exception e) {
             this.logger.error("线程:" + Thread.currentThread().getName() + "执行 异常" + e);
         }
@@ -81,9 +80,10 @@ public class DThread implements Runnable {
             // 用户未如设置保存天数，则默认为7天
             int ku_saveDays = StringUtils.isNotBlank(userInfo.get("KU_SAVEDAYS").toString())
                     ? Integer.valueOf(userInfo.get("KU_SAVEDAYS").toString()) : 7;
-//            String ku_status = userInfo.get("KU_STATUS").toString();
-            String ku_status = "0";
-            // 根据标示判断，保存用户数据还是备份用户数据
+            // 如果未设置，默认为0，清除用户数据
+            String ku_status = StringUtils.isNotBlank(userInfo.get("KU_ISSAVEOVERDUEDATA").toString())
+                    ? userInfo.get("KU_ISSAVEOVERDUEDATA").toString() : "0";
+            // 根据标识判断，是否存储用户信息
             if ("0".equals(ku_status)) {
                 // 删除WK_T_VALIDATION_REF表数据
                 this.deleteTableDataBy_KV_DTCTIME(jdbcTemplate, WK_T_VALIDATION_REF, ku_id, ku_name, ku_dbName,
@@ -100,10 +100,23 @@ public class DThread implements Runnable {
                 // 删除WK_T_VALIDATION_INFOCNT表数据
                 this.deleteTableDataBy_KV_DTCTIME(jdbcTemplate, WK_T_VALIDATION_INFOCNT, ku_id, ku_name, ku_dbName,
                         ku_saveDays);
-            } else {
+            } else if ("1".equals(ku_status)) {
+                // 备份WK_T_VALIDATION_REF表数据
+                this.copyTableByName(jdbcTemplate, WK_T_VALIDATION_REF, ku_id, ku_name, ku_dbName,
+                        ku_saveDays);
 
+                // 备份WK_T_VALIDATION_LOCATIONREF表数据
+                this.copyTableByName(jdbcTemplate, WK_T_VALIDATION_LOCATIONREF, ku_id, ku_name, ku_dbName,
+                        ku_saveDays);
+
+                // 备份WK_T_VALIDATION_INFO表数据
+                this.copyTableByName(jdbcTemplate, WK_T_VALIDATION_INFO, ku_id, ku_name, ku_dbName,
+                        ku_saveDays);
+
+                // 备份WK_T_VALIDATION_INFOCNT表数据
+                this.copyTableByName(jdbcTemplate, WK_T_VALIDATION_INFOCNT, ku_id, ku_name, ku_dbName,
+                        ku_saveDays);
             }
-
             // 删除WK_T_EVERYDAYDATA表数据
             this.deleteTableDataBy_KV_TIME(jdbcTemplate, WK_T_EVERYDAYDATA, ku_id, ku_name, ku_dbName, ku_saveDays);
 
@@ -264,7 +277,9 @@ public class DThread implements Runnable {
     public void copyTableByName(JdbcTemplate jdbcTemplate, String tableName, String ku_id, String ku_name,
             String ku_dbName, int ku_saveDays) throws Exception {
         StringBuffer createSQL = new StringBuffer();
-        createSQL.append("CREATE TABLE ");
+        createSQL.append("CREATE TABLE U");
+        createSQL.append(ku_id);
+        createSQL.append(".");
         createSQL.append(tableName);
         createSQL.append("_");
         createSQL.append(DateUtil.dateToString(DateUtil.addDay(new Date(), -ku_saveDays)));
