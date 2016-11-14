@@ -4,8 +4,6 @@ package com.zhxg.test;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
-import com.zhxg.utils.ExecutorProcessPool;
-
 
 /**
  * <p>
@@ -35,28 +33,28 @@ import com.zhxg.utils.ExecutorProcessPool;
  */
 public class ExecutorTest {
 
-    public static void main(String[] args) {
-
-        ExecutorProcessPool pool = ExecutorProcessPool.getInstance();
-
-        // for (int i = 0; i < 200; i++) {
-        // Future<?> future = pool.submit(new ExcuteTask1(i + ""));
-        // // try {
-        // // 如果接收线程返回值，future.get() 会阻塞，如果这样写就是一个线程一个线程执行。所以非特殊情况不建议使用接收返回值的。
-        // // System.out.println(future.get());
-        // // } catch (Exception e) {
-        // // e.printStackTrace();
-        // // }
-        // }
-
-        for (int i = 0; i < 200; i++) {
-            pool.execute(new ExcuteTask2(i + ""));
-        }
-
-        // 关闭线程池，如果是需要长期运行的线程池，不用调用该方法。
-        // 监听程序退出的时候最好执行一下。
-        pool.shutdown();
-    }
+    // public static void main(String[] args) {
+    //
+    // ExecutorProcessPool pool = ExecutorProcessPool.getInstance();
+    //
+    // // for (int i = 0; i < 200; i++) {
+    // // Future<?> future = pool.submit(new ExcuteTask1(i + ""));
+    // // // try {
+    // // // 如果接收线程返回值，future.get() 会阻塞，如果这样写就是一个线程一个线程执行。所以非特殊情况不建议使用接收返回值的。
+    // // // System.out.println(future.get());
+    // // // } catch (Exception e) {
+    // // // e.printStackTrace();
+    // // // }
+    // // }
+    //
+    // for (int i = 0; i < 200; i++) {
+    // pool.execute(new ExcuteTask2(i + ""));
+    // }
+    //
+    // // 关闭线程池，如果是需要长期运行的线程池，不用调用该方法。
+    // // 监听程序退出的时候最好执行一下。
+    // pool.shutdown();
+    // }
 
     /**
      * 执行任务1，实现Callable方式

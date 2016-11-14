@@ -99,11 +99,11 @@ public class DeleteDataScheduledTasks {
      * @throws Exception
      */
     // 17.52执行一次
-    @Scheduled(cron = "0 40 16 ? * *")
+    // @Scheduled(cron = "0 00 17 ? * *")
     // 每隔5秒钟执行一次
     // @Scheduled(fixedRate = 5000)
     // 12点到3点，每隔10分钟执行一次
-    // @Scheduled(cron = "0 0/20 00-6 * * ?")
+    @Scheduled(cron = "0 0/20 00-6 * * ?")
     public void reportCurrentTime() {
         this.logger.info("**************************数据删除定时任务开始执行**************************");
         // 校验用户信息

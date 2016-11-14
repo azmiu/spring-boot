@@ -14,6 +14,32 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import com.zhxg.utils.BeanTools;
 import com.zhxg.utils.DateUtil;
 
+/**
+ * <p>
+ * CopyRright (c)20014-2016: Azmiu
+ * <p>
+ * Project: zhxg
+ * <p>
+ * Module ID: <模块类编号可以引用系统设计中的类编号>
+ * <p>
+ * Comments: 测试类
+ * <p>
+ * JDK version used: JDK1.8
+ * <p>
+ * NameSpace: com.zhxg.test.DThread2.java
+ * <p>
+ * Author: azmiu
+ * <p>
+ * Create Date: 2016年11月14日
+ * <p>
+ * Modified By: <修改人中文名或拼音缩写>
+ * <p>
+ * Modified Date: <修改日期>
+ * <p>
+ * Why & What is modified: <修改原因描述>
+ * <p>
+ * Version: v1.0
+ */
 public class DThread2 implements Runnable {
 
     private final static String DB_NAME_30_4 = "192.168.30.4";
