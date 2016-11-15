@@ -1,5 +1,6 @@
 package com.zhxg.utils;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -82,5 +83,31 @@ public class DateUtil {
      */
     public static Date getSystemDate() {
         return new Date();
+    }
+
+    public static boolean betweenAndDate(String before, String after) {
+        Calendar ncalendar = Calendar.getInstance();
+        // 小时
+        System.out.println(ncalendar.get(Calendar.HOUR_OF_DAY));
+        // 分
+        System.out.println(ncalendar.get(Calendar.MINUTE));
+        // hour minute
+        SimpleDateFormat sim1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Date date1 = null;
+        try {
+            date1 = sim1.parse(sim1.format(new Date()));
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        try {
+            if ((date1.before(sim1.parse(before)) && date1.after(sim1.parse(after)))) {
+                return true;
+            } else {
+                return false;
+            }
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 }

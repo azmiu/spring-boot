@@ -3,6 +3,7 @@ package com.zhxg.utils;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
 
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -38,7 +39,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 public class DThread implements Runnable {
 
     // 定时删除任务每次删除的数据条目
-    private final static String LIMIT = "LIMIT 20000";
+    private final static String LIMIT = "LIMIT 1000";
     private final static String WK_T_EVERYDAYDATA = "WK_T_EVERYDAYDATA";
     private final static String WK_T_VALIDATION_INFO = "WK_T_VALIDATION_INFO";
 
@@ -50,10 +51,12 @@ public class DThread implements Runnable {
 
     private Map<String, Object> userinfo;
     private JdbcTemplate jdbcTemplate;
+    private CountDownLatch countDown;
 
-    public DThread(Map<String, Object> userInfo, JdbcTemplate jdbcTemplate) {
+    public DThread(Map<String, Object> userInfo, JdbcTemplate jdbcTemplate, CountDownLatch countDown) {
         this.jdbcTemplate = jdbcTemplate;
         this.userinfo = userInfo;
+        this.countDown = countDown;
     }
 
     @Override
@@ -61,7 +64,9 @@ public class DThread implements Runnable {
         try {
             this.processDataHandler(this.userinfo, this.jdbcTemplate);
         } catch (Exception e) {
-            this.logger.error("线程:" + Thread.currentThread().getName() + "执行 异常" + e);
+            this.logger.error("线程:" + Thread.currentThread().getName() + "执行 异常，{}" + e);
+        } finally {
+            this.countDown.countDown();
         }
     }
 
@@ -83,22 +88,29 @@ public class DThread implements Runnable {
             // 如果未设置，默认为0，清除用户数据
             String ku_status = StringUtils.isNotBlank(userInfo.get("KU_ISSAVEOVERDUEDATA").toString())
                     ? userInfo.get("KU_ISSAVEOVERDUEDATA").toString() : "0";
+            int WK_T_VALIDATION_REF_COUNT = 0;
+            int WK_T_VALIDATION_LOCATIONREF_COUNT = 0;
+            int WK_T_VALIDATION_INFO_COUNT = 0;
+            int WK_T_VALIDATION_INFOCNT_COUNT = 0;
+            int WK_T_EVERYDAYDATA_COUNT = 0;
+            int YQZB_T_ENGINE_INFO_COUNT = 0;
             // 根据标识判断，是否存储用户信息
             if ("0".equals(ku_status)) {
                 // 删除WK_T_VALIDATION_REF表数据
-                this.deleteTableDataBy_KV_DTCTIME(jdbcTemplate, WK_T_VALIDATION_REF, ku_id, ku_name, ku_dbName,
+                WK_T_VALIDATION_REF_COUNT = this.deleteTableDataBy_KV_DTCTIME(jdbcTemplate, WK_T_VALIDATION_REF, ku_id,
+                        ku_name, ku_dbName,
                         ku_saveDays);
 
                 // 删除WK_T_VALIDATION_LOCATIONREF表数据
-                this.deleteTableDataBy_KV_DTCTIME(jdbcTemplate, WK_T_VALIDATION_LOCATIONREF, ku_id, ku_name, ku_dbName,
+                WK_T_VALIDATION_LOCATIONREF_COUNT = this.deleteTableDataBy_KV_DTCTIME(jdbcTemplate, WK_T_VALIDATION_LOCATIONREF, ku_id, ku_name, ku_dbName,
                         ku_saveDays);
 
                 // 删除WK_T_VALIDATION_INFO表数据
-                this.deleteTableDataBy_KV_DTCTIME(jdbcTemplate, WK_T_VALIDATION_INFO, ku_id, ku_name, ku_dbName,
+                WK_T_VALIDATION_INFO_COUNT = this.deleteTableDataBy_KV_DTCTIME(jdbcTemplate, WK_T_VALIDATION_INFO, ku_id, ku_name, ku_dbName,
                         ku_saveDays);
 
                 // 删除WK_T_VALIDATION_INFOCNT表数据
-                this.deleteTableDataBy_KV_DTCTIME(jdbcTemplate, WK_T_VALIDATION_INFOCNT, ku_id, ku_name, ku_dbName,
+                WK_T_VALIDATION_INFOCNT_COUNT = this.deleteTableDataBy_KV_DTCTIME(jdbcTemplate, WK_T_VALIDATION_INFOCNT, ku_id, ku_name, ku_dbName,
                         ku_saveDays);
             } else if ("1".equals(ku_status)) {
                 // 备份WK_T_VALIDATION_REF表数据
@@ -118,15 +130,23 @@ public class DThread implements Runnable {
                         ku_saveDays);
             }
             // 删除WK_T_EVERYDAYDATA表数据
-            this.deleteTableDataBy_KV_TIME(jdbcTemplate, WK_T_EVERYDAYDATA, ku_id, ku_name, ku_dbName, ku_saveDays);
+            WK_T_EVERYDAYDATA_COUNT = this.deleteTableDataBy_KV_TIME(jdbcTemplate, WK_T_EVERYDAYDATA, ku_id, ku_name, ku_dbName, ku_saveDays);
 
             // 删除YQZB_T_ENGINE_INFO表数据
-            this.delete_YQZB_T_ENGINE_INFO(jdbcTemplate, ku_id, ku_name, ku_dbName);
-
+            YQZB_T_ENGINE_INFO_COUNT = this.delete_YQZB_T_ENGINE_INFO(jdbcTemplate, ku_id, ku_name, ku_dbName);
+            if (WK_T_VALIDATION_REF_COUNT == 0
+                    && WK_T_VALIDATION_LOCATIONREF_COUNT == 0
+                    && WK_T_VALIDATION_INFO_COUNT == 0
+                    && WK_T_VALIDATION_INFOCNT_COUNT == 0
+                    && WK_T_EVERYDAYDATA_COUNT == 0
+                    && YQZB_T_ENGINE_INFO_COUNT == 0) {
+                // DeleteDataScheduledTasks.usersList.remove(userInfo);
+            }
         } else {
-            this.logger.error("{}数据库链接丢失或用户信息丢失");
+            this.logger.error("数据库链接丢失或用户信息丢失");
         }
     }
+
 
     /**
      * 删除指定表内指定天数数据
@@ -140,7 +160,7 @@ public class DThread implements Runnable {
      * @param ku_saveDays
      * @throws Exception
      */
-    public void deleteTableDataBy_KV_DTCTIME(JdbcTemplate jdbcTemplate, String tableName, String ku_id, String ku_name,
+    public int deleteTableDataBy_KV_DTCTIME(JdbcTemplate jdbcTemplate, String tableName, String ku_id, String ku_name,
             String ku_dbName, int ku_saveDays) throws Exception {
         StringBuffer deleteSQL = new StringBuffer();
         deleteSQL.append("DELETE FROM U");
@@ -157,6 +177,7 @@ public class DThread implements Runnable {
             this.logger.info(
                     "用户：" + ku_name + "，从" + ku_dbName + "上删除【" + tableName + "】表中" + +ku_saveDays + "天前的数据："
                             + count + "条");
+            return count;
         } catch (Exception e) {
             throw new Exception("删除表数据异常，{}" + e);
         }
@@ -174,7 +195,7 @@ public class DThread implements Runnable {
      * @param ku_saveDays
      * @throws Exception
      */
-    public void deleteTableDataBy_KV_TIME(JdbcTemplate jdbcTemplate, String tableName, String ku_id, String ku_name,
+    public int deleteTableDataBy_KV_TIME(JdbcTemplate jdbcTemplate, String tableName, String ku_id, String ku_name,
             String ku_dbName, int ku_saveDays) throws Exception {
         StringBuffer deleteSQL = new StringBuffer();
         deleteSQL.append("DELETE FROM U");
@@ -190,6 +211,7 @@ public class DThread implements Runnable {
             this.logger.info(
                     "用户：" + ku_name + "，从" + ku_dbName + "上删除【" + tableName + "】表中" + +ku_saveDays + "天前的数据："
                             + count + "条");
+            return count;
         } catch (Exception e) {
             throw new Exception("删除表数据异常，{}" + e);
         }
@@ -207,7 +229,7 @@ public class DThread implements Runnable {
      * @throws Exception
      * @throws Exception
      */
-    public void delete_YQZB_T_ENGINE_INFO(JdbcTemplate jdbcTemplate, String ku_id, String ku_name, String ku_dbName)
+    public int delete_YQZB_T_ENGINE_INFO(JdbcTemplate jdbcTemplate, String ku_id, String ku_name, String ku_dbName)
             throws Exception {
         StringBuffer deleteSQL = new StringBuffer();
         deleteSQL.append("DELETE FROM U");
@@ -223,6 +245,7 @@ public class DThread implements Runnable {
             this.logger.info(
                     "用户：" + ku_name + "，从" + ku_dbName + "上删除【YQZB_T_ENGINE_INFO】表中数据："
                             + count + "条");
+            return count;
         } catch (Exception e) {
             throw new Exception("删除表数据异常，{}" + e);
         }

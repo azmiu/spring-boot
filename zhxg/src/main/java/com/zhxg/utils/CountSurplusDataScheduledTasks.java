@@ -111,7 +111,7 @@ public class CountSurplusDataScheduledTasks {
      * @throws Exception
      */
     // 17.52执行一次
-    @Scheduled(cron = "0 00 07 ? * *")
+    @Scheduled(cron = "0 11 15 ? * *")
     // 每隔5秒钟执行一次
     // @Scheduled(fixedRate = 5000)
     // 12点到6点，每隔1小时执行一次

@@ -44,6 +44,7 @@ public class ExecutorProcessPool {
     private ExecutorProcessPool() {
         this.logger.info("初始化线程池成功{}" + this.threadMax);
         this.executor = ExecutorServiceFactory.getInstance().createFixedThreadPool(this.threadMax);
+        // this.executor = ExecutorServiceFactory.getInstance().createCachedThreadPool();
     }
 
     public static ExecutorProcessPool getInstance() {
@@ -86,4 +87,13 @@ public class ExecutorProcessPool {
         this.executor.execute(task);
     }
 
+    /**
+     * 获取线程池运行结果
+     *
+     * @return
+     * @throws Exception
+     */
+    public boolean getResult() {
+        return this.executor.isTerminated();
+    }
 }

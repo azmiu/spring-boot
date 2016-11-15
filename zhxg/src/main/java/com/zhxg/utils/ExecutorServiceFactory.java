@@ -123,7 +123,7 @@ public class ExecutorServiceFactory {
                 SecurityManager s = System.getSecurityManager();
                 ThreadGroup group = (s != null) ? s.getThreadGroup() : Thread.currentThread().getThreadGroup();
                 Thread t = new Thread(group, r);
-                t.setName("任务线程 - " + this.sn.incrementAndGet());
+                t.setName("定时任务线程-" + this.sn.incrementAndGet());
                 return t;
             }
         };

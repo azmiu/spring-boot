@@ -3,6 +3,7 @@ package com.zhxg.utils;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
 
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -51,7 +52,13 @@ public class DeleteDataScheduledTasks {
     private final static String DB_NAME_17_207 = "192.168.17.207";
     private final static String DB_NAME_30_4 = "192.168.30.4";
     private final static String DB_NAME_30_5 = "192.168.30.5";
+
     private Logger logger = LoggerFactory.getLogger(DeleteDataScheduledTasks.class);
+
+    public static List<Map<String, Object>> usersList;
+
+    CountDownLatch countDown = new CountDownLatch(10);
+
 
     @Autowired
     @Qualifier("user195JdbcTemplate")
@@ -92,24 +99,35 @@ public class DeleteDataScheduledTasks {
     @Autowired
     @Qualifier("user5JdbcTemplate")
     JdbcTemplate user5jdbcTemplate;
-
+    
     /**
      * 定时任务
      *
      * @throws Exception
      */
     // 17.52执行一次
-    // @Scheduled(cron = "0 00 17 ? * *")
+    // @Scheduled(cron = "0 49 14 ? * *")
     // 每隔5秒钟执行一次
-    // @Scheduled(fixedRate = 5000)
+    @Scheduled(fixedRate = 1000)
+    // @Scheduled(fixedDelay = 600000)
     // 12点到3点，每隔10分钟执行一次
-    @Scheduled(cron = "0 0/20 00-6 * * ?")
+    // @Scheduled(cron = "0 0/20 9-12 * * ?")
     public void reportCurrentTime() {
         this.logger.info("**************************数据删除定时任务开始执行**************************");
+        // 获取用户信息
+        usersList = this.getUserInfo();
+        // 如果当前需要删除的用户数大于0
+        // Calendar.getInstance().get(Calendar.HOUR_OF_DAY) > 3
+        try {
+            this.countDown.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         // 校验用户信息
         this.verificationUserInfo();
         // 校验表信息
         this.verificationTableInfo();
+
     }
     
     /**
@@ -119,12 +137,12 @@ public class DeleteDataScheduledTasks {
      * @throws Exception
      */
     public void verificationUserInfo() {
-        List<Map<String, Object>> userinfoList = this.getUserInfo();
-        for (int i = 0; i < userinfoList.size(); i++) {
+        // List<Map<String, Object>> userinfoList = this.getUserInfo();
+        for (int i = 0; i < usersList.size(); i++) {
             try {
-                this.checkDataSource(userinfoList.get(i));
+                this.checkDataSource(usersList.get(i));
             } catch (Exception e) {
-                this.logger.error("第" + (i + 1) + "个用户信息数据异常！" + e);
+                this.logger.error("用户配置信息异常，{}" + e);
                 continue;
             }
         }
@@ -138,7 +156,7 @@ public class DeleteDataScheduledTasks {
      */
     public List<Map<String, Object>> getUserInfo() {
         return this.user2jdbcTemplate.queryForList(
-                "SELECT u.KU_ID,u.KU_LID,u.ku_name,u.KU_DBNAME,us.KU_SAVEDAYS,us.KU_ISSAVEOVERDUEDATA from yqms2.WK_T_USER u LEFT JOIN yqms2.WK_T_USERSERVICE us on u.KU_ID = us.KU_ID");
+                "SELECT u.KU_ID,u.KU_LID,u.ku_name,u.KU_DBNAME,us.KU_SAVEDAYS,us.KU_ISSAVEOVERDUEDATA from yqms2.WK_T_USER u LEFT JOIN yqms2.WK_T_USERSERVICE us on u.KU_ID = us.KU_ID limit 50");
     }
 
     /**
@@ -154,32 +172,33 @@ public class DeleteDataScheduledTasks {
         ExecutorProcessPool pool = ExecutorProcessPool.getInstance();
         if (StringUtils.isNotBlank(userInfo.get("KU_DBNAME").toString())
                 && DB_NAME_30_4.equals(userInfo.get("KU_DBNAME").toString())) {
-            pool.execute(new DThread(userInfo, this.user4jdbcTemplate));
+            pool.execute(new DThread(userInfo, this.user4jdbcTemplate, this.countDown));
             // DThread dt = new DThread(userInfo, this.user4jdbcTemplate);
             // Thread th = new Thread(dt, "定时任务线程NO.1");
             // th.start();
         } else if (StringUtils.isNotBlank(userInfo.get("KU_DBNAME").toString())
                 && DB_NAME_30_5.equals(userInfo.get("KU_DBNAME").toString())) {
-            pool.execute(new DThread(userInfo, this.user5jdbcTemplate));
-        } else if (StringUtils.isNotBlank(userInfo.get("KU_DBNAME").toString())
-                && DB_NAME_16_195.equals(userInfo.get("KU_DBNAME").toString())) {
-            pool.execute(new DThread(userInfo, this.user195jdbcTemplate));
-        } else if (StringUtils.isNotBlank(userInfo.get("KU_DBNAME").toString())
-                && DB_NAME_16_196.equals(userInfo.get("KU_DBNAME").toString())) {
-            pool.execute(new DThread(userInfo, this.user196jdbcTemplate));
-        } else if (StringUtils.isNotBlank(userInfo.get("KU_DBNAME").toString())
-                && DB_NAME_16_197.equals(userInfo.get("KU_DBNAME").toString())) {
-            pool.execute(new DThread(userInfo, this.user197jdbcTemplate));
-        } else if (StringUtils.isNotBlank(userInfo.get("KU_DBNAME").toString())
-                && DB_NAME_17_205.equals(userInfo.get("KU_DBNAME").toString())) {
-            pool.execute(new DThread(userInfo, this.user205jdbcTemplate));
-        } else if (StringUtils.isNotBlank(userInfo.get("KU_DBNAME").toString())
-                && DB_NAME_17_206.equals(userInfo.get("KU_DBNAME").toString())) {
-            pool.execute(new DThread(userInfo, this.user206jdbcTemplate));
-        } else if (StringUtils.isNotBlank(userInfo.get("KU_DBNAME").toString())
-                && DB_NAME_17_207.equals(userInfo.get("KU_DBNAME").toString())) {
-            pool.execute(new DThread(userInfo, this.user207jdbcTemplate));
+            pool.execute(new DThread(userInfo, this.user5jdbcTemplate, this.countDown));
         }
+        // else if (StringUtils.isNotBlank(userInfo.get("KU_DBNAME").toString())
+        // && DB_NAME_16_195.equals(userInfo.get("KU_DBNAME").toString())) {
+        // pool.execute(new DThread(userInfo, this.user195jdbcTemplate));
+        // } else if (StringUtils.isNotBlank(userInfo.get("KU_DBNAME").toString())
+        // && DB_NAME_16_196.equals(userInfo.get("KU_DBNAME").toString())) {
+        // pool.execute(new DThread(userInfo, this.user196jdbcTemplate));
+        // } else if (StringUtils.isNotBlank(userInfo.get("KU_DBNAME").toString())
+        // && DB_NAME_16_197.equals(userInfo.get("KU_DBNAME").toString())) {
+        // pool.execute(new DThread(userInfo, this.user197jdbcTemplate));
+        // } else if (StringUtils.isNotBlank(userInfo.get("KU_DBNAME").toString())
+        // && DB_NAME_17_205.equals(userInfo.get("KU_DBNAME").toString())) {
+        // pool.execute(new DThread(userInfo, this.user205jdbcTemplate));
+        // } else if (StringUtils.isNotBlank(userInfo.get("KU_DBNAME").toString())
+        // && DB_NAME_17_206.equals(userInfo.get("KU_DBNAME").toString())) {
+        // pool.execute(new DThread(userInfo, this.user206jdbcTemplate));
+        // } else if (StringUtils.isNotBlank(userInfo.get("KU_DBNAME").toString())
+        // && DB_NAME_17_207.equals(userInfo.get("KU_DBNAME").toString())) {
+        // pool.execute(new DThread(userInfo, this.user207jdbcTemplate));
+        // }
     }
 
     /**
