@@ -1,6 +1,5 @@
 package com.azmiu.utils;
 
-
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -33,7 +32,7 @@ import org.slf4j.LoggerFactory;
  * Why & What is modified: <修改原因描述>
  * <p>
  * Version: v1.0
- */ 
+ */
 public class ExecutorProcessPool {
 
     private Logger logger = LoggerFactory.getLogger(ExecutorProcessPool.class);
