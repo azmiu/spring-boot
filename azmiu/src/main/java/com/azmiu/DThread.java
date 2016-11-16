@@ -1,9 +1,10 @@
 package com.azmiu;
 
 import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 
-public class DThread implements Runnable {
+public class DThread implements Callable<Integer> {
 
     private Map<String, String> map;
     private CountDownLatch countDown;
@@ -14,21 +15,8 @@ public class DThread implements Runnable {
     }
 
     @Override
-    public void run() {
-        this.delete(this.map);
-    }
-
-    public void delete(Map<String, String> map) {
-        int count = 0;
-        for (int i = 0; i < 1000000000; i++) {
-            count++;
-        }
-        try {
-            Thread.currentThread().sleep(5000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        System.out.println("呵呵哒" + count);
-        this.countDown.countDown();
+    public Integer call() throws Exception {
+        // TODO Auto-generated method stub
+        return null;
     }
 }

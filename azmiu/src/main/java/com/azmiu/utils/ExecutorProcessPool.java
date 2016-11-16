@@ -73,7 +73,7 @@ public class ExecutorProcessPool {
      * @param task
      * @return
      */
-    public Future<?> submit(Callable<?> task) {
+    public Future<Integer> submit(Callable<Integer> task) {
         return this.executor.submit(task);
     }
 

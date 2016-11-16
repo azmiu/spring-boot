@@ -1,24 +1,21 @@
 package com.zhxg.test;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
 public class Test1 {
 
-    public static void main(String args[]) throws InterruptedException {
-        ExecutorService exe = Executors.newFixedThreadPool(50);
-        for (int i = 1; i <= 5; i++) {
-            exe.execute(new SubThread(i));
-        }
-        exe.shutdown();
-        while (true) {
-            if (exe.isTerminated()) {
-                System.out.println("结束了！");
-                break;
-            }  
-            Thread.sleep(200);
-        }  
-    }
+    // public static void main(String args[]) throws InterruptedException {
+    // ExecutorService exe = Executors.newFixedThreadPool(50);
+    // for (int i = 1; i <= 5; i++) {
+    // exe.execute(new SubThread(i));
+    // }
+    // exe.shutdown();
+    // while (true) {
+    // if (exe.isTerminated()) {
+    // System.out.println("结束了！");
+    // break;
+    // }
+    // Thread.sleep(200);
+    // }
+    // }
 
     // Calendar ncalendar = Calendar.getInstance();
     // //小时

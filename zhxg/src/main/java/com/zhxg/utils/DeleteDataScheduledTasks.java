@@ -1,9 +1,12 @@
 package com.zhxg.utils;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -56,8 +59,10 @@ public class DeleteDataScheduledTasks {
     private Logger logger = LoggerFactory.getLogger(DeleteDataScheduledTasks.class);
 
     public static List<Map<String, Object>> usersList;
+    // 全局计数器，线程安全
+    private static AtomicInteger count = new AtomicInteger();
 
-    CountDownLatch countDown = new CountDownLatch(10);
+    private static List<Future<Integer>> futurelist = new ArrayList<Future<Integer>>();
 
 
     @Autowired
@@ -106,9 +111,9 @@ public class DeleteDataScheduledTasks {
      * @throws Exception
      */
     // 17.52执行一次
-    // @Scheduled(cron = "0 49 14 ? * *")
+    @Scheduled(cron = "0 15 15 ? * *")
     // 每隔5秒钟执行一次
-    @Scheduled(fixedRate = 1000)
+    // @Scheduled(fixedRate = 1000)
     // @Scheduled(fixedDelay = 600000)
     // 12点到3点，每隔10分钟执行一次
     // @Scheduled(cron = "0 0/20 9-12 * * ?")
@@ -116,18 +121,56 @@ public class DeleteDataScheduledTasks {
         this.logger.info("**************************数据删除定时任务开始执行**************************");
         // 获取用户信息
         usersList = this.getUserInfo();
-        // 如果当前需要删除的用户数大于0
-        // Calendar.getInstance().get(Calendar.HOUR_OF_DAY) > 3
-        try {
-            this.countDown.await();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        // 校验用户信息
-        this.verificationUserInfo();
-        // 校验表信息
-        this.verificationTableInfo();
 
+        // 首次运行，将用户数赋值与计数器
+        count.set(usersList.size());
+
+        /**
+         * 计数器=usersList.size()，证明所有线程执行完毕，进行下一次循环
+         * 线程返回结果大于0，证明用户数据未删完，进行下一次循环
+         * 直至用户数据全部删除，返回结果为0，并且所有线程执行完毕，则进入休眠状态，等待定时器的下次触发
+         */
+        while (this.checkStatus()) {
+            // 每次循环，初始化计数器和线程结果集
+            count.set(0);
+            this.logger.info("计数器初始化成功，{}");
+            futurelist = new ArrayList<Future<Integer>>();
+            this.logger.info("线程结果集初始化成功，{}");
+            // 校验用户信息
+            this.verificationUserInfo();
+            // 校验表信息
+            this.verificationTableInfo();
+        }
+    }
+
+    /**
+     * 检查状态
+     *
+     * @return
+     * @throws Exception
+     */
+    public boolean checkStatus() {
+        boolean status = true;
+        if (usersList.size() == count.get()) {
+            status = true;
+        } else {
+            status = false;
+        }
+        for (Future<Integer> futrue : futurelist) {
+            try {
+                if (futrue.get() > 0) {
+                    status = true;
+                    break;
+                } else {
+                    status = false;
+                }
+            } catch (InterruptedException e) {
+                this.logger.error("获取线程执行结果失败，{}" + e);
+            } catch (ExecutionException e) {
+                this.logger.error("获取线程执行结果失败，{}" + e);
+            }
+        }
+        return status;
     }
     
     /**
@@ -137,7 +180,6 @@ public class DeleteDataScheduledTasks {
      * @throws Exception
      */
     public void verificationUserInfo() {
-        // List<Map<String, Object>> userinfoList = this.getUserInfo();
         for (int i = 0; i < usersList.size(); i++) {
             try {
                 this.checkDataSource(usersList.get(i));
@@ -156,7 +198,7 @@ public class DeleteDataScheduledTasks {
      */
     public List<Map<String, Object>> getUserInfo() {
         return this.user2jdbcTemplate.queryForList(
-                "SELECT u.KU_ID,u.KU_LID,u.ku_name,u.KU_DBNAME,us.KU_SAVEDAYS,us.KU_ISSAVEOVERDUEDATA from yqms2.WK_T_USER u LEFT JOIN yqms2.WK_T_USERSERVICE us on u.KU_ID = us.KU_ID limit 50");
+                "SELECT u.KU_ID,u.KU_LID,u.ku_name,u.KU_DBNAME,us.KU_SAVEDAYS,us.KU_ISSAVEOVERDUEDATA from yqms2.WK_T_USER u LEFT JOIN yqms2.WK_T_USERSERVICE us on u.KU_ID = us.KU_ID");
     }
 
     /**
@@ -172,13 +214,14 @@ public class DeleteDataScheduledTasks {
         ExecutorProcessPool pool = ExecutorProcessPool.getInstance();
         if (StringUtils.isNotBlank(userInfo.get("KU_DBNAME").toString())
                 && DB_NAME_30_4.equals(userInfo.get("KU_DBNAME").toString())) {
-            pool.execute(new DThread(userInfo, this.user4jdbcTemplate, this.countDown));
-            // DThread dt = new DThread(userInfo, this.user4jdbcTemplate);
-            // Thread th = new Thread(dt, "定时任务线程NO.1");
-            // th.start();
+            Future<Integer> future = pool
+                    .submit(new DCallable(userInfo, this.user4jdbcTemplate, DeleteDataScheduledTasks.count));
+            futurelist.add(future);
         } else if (StringUtils.isNotBlank(userInfo.get("KU_DBNAME").toString())
                 && DB_NAME_30_5.equals(userInfo.get("KU_DBNAME").toString())) {
-            pool.execute(new DThread(userInfo, this.user5jdbcTemplate, this.countDown));
+            Future<Integer> future = pool
+                    .submit(new DCallable(userInfo, this.user5jdbcTemplate, DeleteDataScheduledTasks.count));
+            futurelist.add(future);
         }
         // else if (StringUtils.isNotBlank(userInfo.get("KU_DBNAME").toString())
         // && DB_NAME_16_195.equals(userInfo.get("KU_DBNAME").toString())) {

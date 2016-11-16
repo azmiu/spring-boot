@@ -39,7 +39,7 @@ public class ExecutorProcessPool {
     private Logger logger = LoggerFactory.getLogger(ExecutorProcessPool.class);
     private ExecutorService executor;
     private static ExecutorProcessPool pool = new ExecutorProcessPool();
-    private final int threadMax = 10;
+    private final int threadMax = 30;
 
     private ExecutorProcessPool() {
         this.logger.info("初始化线程池成功{}" + this.threadMax);
@@ -74,7 +74,7 @@ public class ExecutorProcessPool {
      * @param task
      * @return
      */
-    public Future<?> submit(Callable<?> task) {
+    public Future<Integer> submit(Callable<Integer> task) {
         return this.executor.submit(task);
     }
 
