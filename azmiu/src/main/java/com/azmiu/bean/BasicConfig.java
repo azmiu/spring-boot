@@ -1,6 +1,6 @@
 package com.azmiu.bean;
 
 
-public class Config {
+public class BasicConfig {
 
 }
